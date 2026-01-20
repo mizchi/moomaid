@@ -27,9 +27,44 @@ just info      # generate type definition files
 ## Coding Convention
 
 - Each block is separated by `///|`
-- Use `moon ide` commands for code navigation (prefer over grep)
-- Use `moon doc <Type>` to explore APIs
 - MoonBit code uses snake_case for variables/functions (lowercase only)
+
+## Code Navigation (IMPORTANT)
+
+**Always use `moon ide` and `moon doc` instead of grep/Read for code exploration.**
+
+### `moon ide` - Semantic Code Navigation
+
+```bash
+# Find symbol definition
+moon ide goto-definition -query 'symbol_name'
+moon ide goto-definition -query 'Type::method'
+
+# Find with tag filtering (pub fn, struct, trait, etc.)
+moon ide goto-definition -tags 'pub fn' -query 'my_func'
+
+# Find in specific package
+moon ide goto-definition -query '@pkg_name symbol'
+
+# Find all references
+moon ide find-references -query 'MyType'
+
+# Show definition inline
+moon ide peek-def Type::method
+
+# List symbols in package/file
+moon ide outline .
+moon ide outline src/lib.mbt
+```
+
+### `moon doc` - API Discovery
+
+```bash
+moon doc ''           # List available packages
+moon doc 'String'     # List String methods
+moon doc '@buffer'    # List symbols in package
+moon doc 'String::*rev*'  # Glob pattern search
+```
 
 ## Tooling
 
