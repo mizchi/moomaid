@@ -1,4 +1,7 @@
-import { "mizchi/lib" as @lib }
+import {
+  "mizchi/lib" as @lib,
+  "moonbitlang/async",
+}
 
 options(
   "is-main": true,

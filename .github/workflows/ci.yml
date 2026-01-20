@@ -19,6 +19,6 @@ jobs:
       - name: Moon update
         run: moon update
       - name: Moon check
-        run: moon check --deny-warn
+        run: moon check --deny-warn --target native
       - name: Moon test
-        run: moon test
+        run: moon test --target native

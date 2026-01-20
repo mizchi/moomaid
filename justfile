@@ -1,5 +1,8 @@
 # MoonBit Project Commands
 
+# Default target (native supports async)
+target := "native"
+
 # Default task: check and test
 default: check test
 
@@ -9,19 +12,19 @@ fmt:
 
 # Type check
 check:
-    moon check --deny-warn
+    moon check --deny-warn --target {{target}}
 
 # Run tests
 test:
-    moon test
+    moon test --target {{target}}
 
 # Update snapshot tests
 test-update:
-    moon test --update
+    moon test --update --target {{target}}
 
 # Run main
 run:
-    moon run src/main
+    moon run src/main --target {{target}}
 
 # Generate type definition files
 info:
