@@ -1,24 +1,27 @@
-# API Documentation
+# Mermaid API
 
-This file contains executable doc tests using `mbt test` blocks.
+## render_mermaid_ascii
 
-## fib
-
-Calculate the n-th Fibonacci number.
-
-```mbt test
-inspect(fib(0), content="1")
-inspect(fib(1), content="1")
-inspect(fib(10), content="89")
+```mbt check
+///|
+test {
+  let text =
+    #|graph TD
+    #|  A --> B
+    #|
+  let ascii = render_mermaid_ascii(text)
+  assert_true(ascii.contains("A"))
+  assert_true(ascii.contains("B"))
+}
 ```
 
-## sum
+## theme
 
-Sum elements in an array with optional start index and length.
-
-```mbt test
-let data = [1, 2, 3, 4, 5]
-inspect(sum(data~), content="15")
-inspect(sum(data~, start=2), content="12")
-inspect(sum(data~, length=3), content="6")
+```mbt check
+///|
+test {
+  let colors = from_syntree_theme(@highlight.github_dark())
+  assert_true(colors.bg.length() > 0)
+  assert_true(colors.fg.length() > 0)
+}
 ```

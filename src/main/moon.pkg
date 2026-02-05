@@ -1,5 +1,6 @@
 import {
-  "mizchi/lib" as @lib,
+  "mizchi/mermaid" as @mermaid,
+  "mizchi/syntree/highlight",
   "moonbitlang/async",
 }
 

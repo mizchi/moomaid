@@ -1,25 +1,66 @@
 ///|
-/// Calculate the n-th Fibonacci number.
-///
-/// ```mbt test
-/// inspect(fib(10), content="89")
-/// ```
-pub fn fib(n : Int) -> Int64 {
-  loop (n, 0L, 1L) {
-    (0, _, b) => b
-    (i, a, b) => continue (i - 1, b, a + b)
+pub fn parse_mermaid_text(text : String) -> MermaidDiagram {
+  parse_mermaid(text)
+}
+
+///|
+pub fn canvas_to_string(canvas : Canvas) -> String {
+  canvas.render()
+}
+
+///|
+pub fn render_mermaid_ascii(
+  text : String,
+  options? : AsciiRenderOptions = default_ascii_options(),
+) -> String {
+  match parse_mermaid(text) {
+    Graph(g) => render_graph_ascii(g, options)
+    Sequence(s) => render_sequence_ascii(s, options)
   }
 }
 
 ///|
-/// data is a labelled argument without default value having type Array[Int]
-/// start is an optional labelled argument with default value 0 having type Int
-/// length is an optional labelled argument without default value having type Option[Int]
-pub fn sum(data~ : Array[Int], start? : Int = 0, length? : Int) -> Int {
-  let end = if length is Some(length) { start + length } else { data.length() }
-  for i = start, sum = 0; i < end; i = i + 1, sum = sum + data[i] {
+pub fn render_mermaid_canvas(
+  text : String,
+  options? : AsciiRenderOptions = default_ascii_options(),
+) -> Canvas {
+  match parse_mermaid(text) {
+    Graph(g) => render_graph_canvas(g, options)
+    Sequence(s) => render_sequence_canvas(s, options)
+  }
+}
 
-  } else {
-    sum
+///|
+pub fn render_mermaid(
+  text : String,
+  options? : RenderOptions = default_render_options(),
+) -> String {
+  match parse_mermaid(text) {
+    Graph(g) => render_graph_svg(g, options)
+    Sequence(s) => render_sequence_svg(s, options)
+  }
+}
+
+///|
+pub fn from_shiki_theme(theme : @highlight.HighlightTheme) -> DiagramColors {
+  from_syntree_theme(theme)
+}
+
+///|
+pub fn render_options_from_colors(
+  colors : DiagramColors,
+  font~ : String = "monospace",
+  transparent~ : Bool = false,
+) -> RenderOptions {
+  {
+    bg: Some(colors.bg),
+    fg: Some(colors.fg),
+    line: Some(colors.line),
+    accent: Some(colors.accent),
+    muted: Some(colors.muted),
+    surface: Some(colors.surface),
+    border: Some(colors.border),
+    font: Some(font),
+    transparent: Some(transparent),
   }
 }
