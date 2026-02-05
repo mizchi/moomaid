@@ -1,0 +1,10 @@
+import {
+  "mizchi/mermaid",
+  "moonbitlang/x/fs",
+  "moonbitlang/core/env",
+  "moonbitlang/core/strconv",
+}
+
+options(
+  "is-main": true,
+)

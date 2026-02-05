@@ -22,9 +22,17 @@ test:
 test-update:
     moon test --update --target {{target}}
 
-# Run main
+# Run main (HTML preview)
 run:
     moon run src/main --target {{target}}
+
+# Run CLI (ASCII/SVG renderer)
+cli *args:
+    moon run src/cli --target {{target}} -- {{args}}
+
+# Run TUI viewer
+tui:
+    moon run src/tui --target {{target}}
 
 # Generate type definition files
 info:

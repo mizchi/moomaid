@@ -6,7 +6,8 @@
     "mizchi/syntree": "0.2.1",
     "mizchi/crater": "0.4.2",
     "mizchi/tui": "0.5.0",
-    "mizchi/signals": "0.6.1"
+    "mizchi/signals": "0.6.1",
+    "moonbitlang/x": "0.4.40"
   },
   "readme": "README.mbt.md",
   "repository": "",

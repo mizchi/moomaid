@@ -1,0 +1,11 @@
+sequenceDiagram
+  participant Browser
+  participant API
+  participant Auth
+  participant DB
+  Browser->>API: POST /login
+  API->>Auth: Validate token
+  Auth-->>API: OK
+  API->>DB: SELECT user
+  DB-->>API: User data
+  API-->>Browser: 200 JSON
