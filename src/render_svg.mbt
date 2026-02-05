@@ -95,10 +95,7 @@ fn svg_state_circle(
 }
 
 ///|
-pub fn render_graph_svg(
-  diagram : GraphDiagram,
-  options : RenderOptions,
-) -> String {
+fn render_graph_svg(diagram : GraphDiagram, options : SvgOptions) -> String {
   let ascii_opts = default_ascii_options()
   let layout = layout_graph(diagram, ascii_opts)
   let colors = build_colors(options)
@@ -194,9 +191,9 @@ pub fn render_graph_svg(
 }
 
 ///|
-pub fn render_sequence_svg(
+fn render_sequence_svg(
   diagram : SequenceDiagram,
-  options : RenderOptions,
+  options : SvgOptions,
 ) -> String {
   let ascii_opts = default_ascii_options()
   let layout = layout_sequence(diagram, ascii_opts)

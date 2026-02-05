@@ -10,7 +10,7 @@ pub struct DiagramColors {
 } derive(Show, Eq)
 
 ///|
-pub struct RenderOptions {
+pub struct SvgOptions {
   bg : String?
   fg : String?
   line : String?
@@ -23,7 +23,7 @@ pub struct RenderOptions {
 } derive(Show, Eq)
 
 ///|
-pub(all) struct AsciiRenderOptions {
+pub(all) struct Options {
   use_ascii : Bool
   padding_x : Int
   padding_y : Int
@@ -32,16 +32,16 @@ pub(all) struct AsciiRenderOptions {
 } derive(Show, Eq)
 
 ///|
-pub struct Defaults {
+struct Defaults {
   bg : String
   fg : String
 } derive(Show, Eq)
 
 ///|
-pub let defaults : Defaults = { bg: "#FFFFFF", fg: "#27272A" }
+let defaults : Defaults = { bg: "#FFFFFF", fg: "#27272A" }
 
 ///|
-pub fn default_render_options() -> RenderOptions {
+fn default_render_options() -> SvgOptions {
   {
     bg: None,
     fg: None,
@@ -56,7 +56,7 @@ pub fn default_render_options() -> RenderOptions {
 }
 
 ///|
-pub fn default_ascii_options() -> AsciiRenderOptions {
+fn default_ascii_options() -> Options {
   {
     use_ascii: false,
     padding_x: 2,
@@ -75,7 +75,7 @@ fn[T] opt_or(value : T?, fallback : T) -> T {
 }
 
 ///|
-pub fn build_colors(options : RenderOptions) -> DiagramColors {
+fn build_colors(options : SvgOptions) -> DiagramColors {
   let bg = opt_or(options.bg, defaults.bg)
   let fg = opt_or(options.fg, defaults.fg)
   let line = opt_or(options.line, fg)
@@ -87,17 +87,17 @@ pub fn build_colors(options : RenderOptions) -> DiagramColors {
 }
 
 ///|
-pub fn resolve_font(options : RenderOptions) -> String {
+fn resolve_font(options : SvgOptions) -> String {
   opt_or(options.font, "Inter")
 }
 
 ///|
-pub fn resolve_transparent(options : RenderOptions) -> Bool {
+fn resolve_transparent(options : SvgOptions) -> Bool {
   opt_or(options.transparent, false)
 }
 
 ///|
-pub fn from_syntree_theme(theme : @highlight.HighlightTheme) -> DiagramColors {
+fn from_syntree_theme(theme : @highlight.HighlightTheme) -> DiagramColors {
   {
     bg: theme.background,
     fg: theme.foreground,

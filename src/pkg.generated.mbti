@@ -1,78 +1,16 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "mizchi/moomaid"
 
-import {
-  "mizchi/syntree/highlight",
-}
-
 // Values
-pub fn build_colors(RenderOptions) -> DiagramColors
+pub fn experimental_render_to_svg(String, options? : SvgOptions) -> String
 
-pub fn canvas_to_string(Canvas) -> String
+pub fn parse(String) -> MermaidDiagram
 
-pub let cell_px : Double
+pub fn render_to_string(String, options? : Options) -> String
 
-pub let cell_py : Double
-
-pub fn default_ascii_options() -> AsciiRenderOptions
-
-pub fn default_render_options() -> RenderOptions
-
-pub let defaults : Defaults
-
-pub fn drop_first_char(String) -> String
-
-pub fn from_shiki_theme(@highlight.HighlightTheme) -> DiagramColors
-
-pub fn from_syntree_theme(@highlight.HighlightTheme) -> DiagramColors
-
-pub fn layout_graph(GraphDiagram, AsciiRenderOptions) -> PositionedGraph
-
-pub fn layout_sequence(SequenceDiagram, AsciiRenderOptions) -> PositionedSequence
-
-pub fn max_int(Int, Int) -> Int
-
-pub fn max_len(Array[String]) -> Int
-
-pub fn parse_mermaid(String) -> MermaidDiagram
-
-pub fn parse_mermaid_text(String) -> MermaidDiagram
-
-pub fn render_graph_ascii(GraphDiagram, AsciiRenderOptions) -> String
-
-pub fn render_graph_canvas(GraphDiagram, AsciiRenderOptions) -> Canvas
-
-pub fn render_graph_svg(GraphDiagram, RenderOptions) -> String
-
-pub fn render_mermaid(String, options? : RenderOptions) -> String
-
-pub fn render_mermaid_ascii(String, options? : AsciiRenderOptions) -> String
-
-pub fn render_mermaid_canvas(String, options? : AsciiRenderOptions) -> Canvas
-
-pub fn render_options_from_colors(DiagramColors, font? : String, transparent? : Bool) -> RenderOptions
-
-pub fn render_sequence_ascii(SequenceDiagram, AsciiRenderOptions) -> String
-
-pub fn render_sequence_canvas(SequenceDiagram, AsciiRenderOptions) -> Canvas
-
-pub fn render_sequence_svg(SequenceDiagram, RenderOptions) -> String
-
-pub fn resolve_font(RenderOptions) -> String
-
-pub fn resolve_transparent(RenderOptions) -> Bool
-
-pub fn split_lines(String) -> Array[String]
-
-pub fn split_once(String, String) -> (String, String)?
-
-pub fn split_ws(String) -> Array[String]
-
-pub fn strip_quotes(String) -> String
+pub fn svg_options_from_theme(String, font? : String, transparent? : Bool) -> SvgOptions?
 
 pub let themes : Map[String, DiagramColors]
-
-pub fn trim_line(String) -> String
 
 // Errors
 
@@ -84,36 +22,15 @@ pub enum ActorKind {
 pub impl Eq for ActorKind
 pub impl Show for ActorKind
 
-pub(all) struct AsciiRenderOptions {
-  use_ascii : Bool
-  padding_x : Int
-  padding_y : Int
-  box_border_padding : Int
-  max_width : Int
-}
-pub impl Eq for AsciiRenderOptions
-pub impl Show for AsciiRenderOptions
-
-pub struct Canvas {
-  width : Int
-  height : Int
-  cells : Array[Array[Cell]]
-}
-pub fn Canvas::new(Int, Int) -> Self
-pub fn Canvas::render(Self) -> String
+type Canvas
 pub impl Eq for Canvas
 pub impl Show for Canvas
 
-pub struct Cell {
-  mut ch : Char
-}
+type Cell
 pub impl Eq for Cell
 pub impl Show for Cell
 
-pub struct Defaults {
-  bg : String
-  fg : String
-}
+type Defaults
 pub impl Eq for Defaults
 pub impl Show for Defaults
 
@@ -173,12 +90,7 @@ pub struct GraphNode {
 pub impl Eq for GraphNode
 pub impl Show for GraphNode
 
-pub struct LayoutBox {
-  x : Int
-  y : Int
-  width : Int
-  height : Int
-}
+type LayoutBox
 pub impl Eq for LayoutBox
 pub impl Show for LayoutBox
 
@@ -199,77 +111,43 @@ pub enum NodeShape {
 pub impl Eq for NodeShape
 pub impl Show for NodeShape
 
-pub struct Point {
-  x : Int
-  y : Int
+pub(all) struct Options {
+  use_ascii : Bool
+  padding_x : Int
+  padding_y : Int
+  box_border_padding : Int
+  max_width : Int
 }
+pub impl Eq for Options
+pub impl Show for Options
+
+type Point
 pub impl Eq for Point
 pub impl Show for Point
 
-pub struct PositionedActor {
-  actor : SequenceActor
-  box : LayoutBox
-}
+type PositionedActor
 pub impl Eq for PositionedActor
 pub impl Show for PositionedActor
 
-pub struct PositionedEdge {
-  edge : GraphEdge
-  start : Point
-  end : Point
-}
+type PositionedEdge
 pub impl Eq for PositionedEdge
 pub impl Show for PositionedEdge
 
-pub struct PositionedGraph {
-  nodes : Array[PositionedNode]
-  edges : Array[PositionedEdge]
-  width : Int
-  height : Int
-  direction : Direction
-  kind : DiagramKind
-}
+type PositionedGraph
 pub impl Eq for PositionedGraph
 pub impl Show for PositionedGraph
 
-pub struct PositionedMessage {
-  message : SequenceMessage
-  start : Point
-  end : Point
-  y : Int
-}
+type PositionedMessage
 pub impl Eq for PositionedMessage
 pub impl Show for PositionedMessage
 
-pub struct PositionedNode {
-  node : GraphNode
-  box : LayoutBox
-}
+type PositionedNode
 pub impl Eq for PositionedNode
 pub impl Show for PositionedNode
 
-pub struct PositionedSequence {
-  actors : Array[PositionedActor]
-  messages : Array[PositionedMessage]
-  width : Int
-  height : Int
-}
+type PositionedSequence
 pub impl Eq for PositionedSequence
 pub impl Show for PositionedSequence
-
-pub struct RenderOptions {
-  bg : String?
-  fg : String?
-  line : String?
-  accent : String?
-  muted : String?
-  surface : String?
-  border : String?
-  font : String?
-  transparent : Bool?
-}
-pub impl Eq for RenderOptions
-pub impl Show for RenderOptions
 
 pub struct SequenceActor {
   id : String
@@ -294,6 +172,20 @@ pub struct SequenceMessage {
 }
 pub impl Eq for SequenceMessage
 pub impl Show for SequenceMessage
+
+pub struct SvgOptions {
+  bg : String?
+  fg : String?
+  line : String?
+  accent : String?
+  muted : String?
+  surface : String?
+  border : String?
+  font : String?
+  transparent : Bool?
+}
+pub impl Eq for SvgOptions
+pub impl Show for SvgOptions
 
 // Type aliases
 

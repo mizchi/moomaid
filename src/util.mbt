@@ -1,5 +1,5 @@
 ///|
-pub fn split_lines(text : String) -> Array[String] {
+fn split_lines(text : String) -> Array[String] {
   let out : Array[String] = []
   for part in text.split("\n") {
     out.push(part.to_string())
@@ -8,12 +8,12 @@ pub fn split_lines(text : String) -> Array[String] {
 }
 
 ///|
-pub fn trim_line(line : String) -> String {
+fn trim_line(line : String) -> String {
   line.trim().to_string()
 }
 
 ///|
-pub fn split_ws(line : String) -> Array[String] {
+fn split_ws(line : String) -> Array[String] {
   let out : Array[String] = []
   let mut sb = StringBuilder::new()
   let mut has = false
@@ -36,7 +36,7 @@ pub fn split_ws(line : String) -> Array[String] {
 }
 
 ///|
-pub fn split_once(text : String, sep : String) -> (String, String)? {
+fn split_once(text : String, sep : String) -> (String, String)? {
   let parts : Array[String] = []
   for part in text.split(sep) {
     parts.push(part.to_string())
@@ -59,7 +59,7 @@ pub fn split_once(text : String, sep : String) -> (String, String)? {
 }
 
 ///|
-pub fn drop_first_char(text : String) -> String {
+fn drop_first_char(text : String) -> String {
   let sb = StringBuilder::new()
   let mut first = true
   for c in text {
@@ -73,7 +73,7 @@ pub fn drop_first_char(text : String) -> String {
 }
 
 ///|
-pub fn strip_quotes(text : String) -> String {
+fn strip_quotes(text : String) -> String {
   let t = text.trim().to_string()
   if t.has_prefix("\"") && t.has_suffix("\"") && t.length() >= 2 {
     let sb = StringBuilder::new()
@@ -92,7 +92,7 @@ pub fn strip_quotes(text : String) -> String {
 }
 
 ///|
-pub fn max_int(a : Int, b : Int) -> Int {
+fn max_int(a : Int, b : Int) -> Int {
   if a > b {
     a
   } else {
@@ -101,7 +101,7 @@ pub fn max_int(a : Int, b : Int) -> Int {
 }
 
 ///|
-pub fn max_len(lines : Array[String]) -> Int {
+fn max_len(lines : Array[String]) -> Int {
   let mut m = 0
   for line in lines {
     m = max_int(m, line.length())

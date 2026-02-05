@@ -91,16 +91,21 @@ sequenceDiagram
 ## Library Usage
 
 ```moonbit
-let svg = @moomaid.render_mermaid("graph LR\n  A --> B")
+// ASCII output
+let ascii = @moomaid.render_to_string("graph LR\n  A --> B")
 
-let options : @moomaid.AsciiRenderOptions = {
+// ASCII with options
+let options : @moomaid.Options = {
   use_ascii: false,
   padding_x: 2,
   padding_y: 1,
   box_border_padding: 1,
   max_width: 80,
 }
-let ascii = @moomaid.render_mermaid_ascii("graph LR\n  A --> B", options~)
+let ascii2 = @moomaid.render_to_string("graph LR\n  A --> B", options~)
+
+// SVG output (experimental)
+let svg = @moomaid.experimental_render_to_svg("graph LR\n  A --> B")
 ```
 
 ## TUI Viewer

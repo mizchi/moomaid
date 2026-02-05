@@ -44,16 +44,16 @@ fn print_usage() -> Unit {
 ///|
 fn render(text : String, svg_mode : Bool, width : Int) -> Unit {
   if svg_mode {
-    println(@moomaid.render_mermaid(text))
+    println(@moomaid.experimental_render_to_svg(text))
   } else {
-    let options : @moomaid.AsciiRenderOptions = {
+    let options : @moomaid.Options = {
       use_ascii: false,
       padding_x: 2,
       padding_y: 1,
       box_border_padding: 1,
       max_width: width,
     }
-    println(@moomaid.render_mermaid_ascii(text, options~))
+    println(@moomaid.render_to_string(text, options~))
   }
 }
 

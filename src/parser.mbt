@@ -567,7 +567,7 @@ fn parse_sequence(lines : Array[String], header_index : Int) -> SequenceDiagram 
 }
 
 ///|
-pub fn parse_mermaid(text : String) -> MermaidDiagram {
+fn parse_mermaid(text : String) -> MermaidDiagram {
   let lines = split_lines(text)
   let (header_index, header) = first_non_empty_line(lines)
   let header_lower = header.to_lower()

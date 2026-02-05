@@ -1,8 +1,8 @@
 ///|
-pub let cell_px : Double = 10.0
+let cell_px : Double = 10.0
 
 ///|
-pub let cell_py : Double = 18.0
+let cell_py : Double = 18.0
 
 ///|
 fn measure_node_size(
@@ -176,10 +176,7 @@ fn make_leaf_style(w : Int, h : Int) -> @style.Style {
 }
 
 ///|
-pub fn layout_graph(
-  diagram : GraphDiagram,
-  options : AsciiRenderOptions,
-) -> PositionedGraph {
+fn layout_graph(diagram : GraphDiagram, options : Options) -> PositionedGraph {
   let padding_x = options.padding_x
   let padding_y = options.padding_y
   let gap_main = 2.0
@@ -308,9 +305,9 @@ pub fn layout_graph(
 }
 
 ///|
-pub fn layout_sequence(
+fn layout_sequence(
   diagram : SequenceDiagram,
-  options : AsciiRenderOptions,
+  options : Options,
 ) -> PositionedSequence {
   let padding_x = options.padding_x
   let actor_gap = 6.0

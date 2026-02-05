@@ -1,17 +1,17 @@
 ///|
-pub struct Cell {
+struct Cell {
   mut ch : Char
 } derive(Show, Eq)
 
 ///|
-pub struct Canvas {
+struct Canvas {
   width : Int
   height : Int
   cells : Array[Array[Cell]]
 } derive(Show, Eq)
 
 ///|
-pub fn Canvas::new(width : Int, height : Int) -> Canvas {
+fn Canvas::new(width : Int, height : Int) -> Canvas {
   let rows : Array[Array[Cell]] = []
   for _ in 0..<height {
     let row : Array[Cell] = []
@@ -339,7 +339,7 @@ fn Canvas::draw_state_marker(
 }
 
 ///|
-pub fn Canvas::render(self : Canvas) -> String {
+fn Canvas::render(self : Canvas) -> String {
   let lines : Array[String] = []
   for row in self.cells {
     let sb = StringBuilder::new()
@@ -357,10 +357,7 @@ pub fn Canvas::render(self : Canvas) -> String {
 }
 
 ///|
-pub fn render_graph_canvas(
-  diagram : GraphDiagram,
-  options : AsciiRenderOptions,
-) -> Canvas {
+fn render_graph_canvas(diagram : GraphDiagram, options : Options) -> Canvas {
   let layout = layout_graph(diagram, options)
   let canvas = Canvas::new(layout.width + 2, layout.height + 2)
   // Pass 1: draw all edge lines
@@ -435,9 +432,9 @@ pub fn render_graph_canvas(
 }
 
 ///|
-pub fn render_sequence_canvas(
+fn render_sequence_canvas(
   diagram : SequenceDiagram,
-  options : AsciiRenderOptions,
+  options : Options,
 ) -> Canvas {
   let layout = layout_sequence(diagram, options)
   let canvas = Canvas::new(layout.width + 2, layout.height + 2)
@@ -464,17 +461,14 @@ pub fn render_sequence_canvas(
 }
 
 ///|
-pub fn render_graph_ascii(
-  diagram : GraphDiagram,
-  options : AsciiRenderOptions,
-) -> String {
+fn render_graph_ascii(diagram : GraphDiagram, options : Options) -> String {
   render_graph_canvas(diagram, options).render()
 }
 
 ///|
-pub fn render_sequence_ascii(
+fn render_sequence_ascii(
   diagram : SequenceDiagram,
-  options : AsciiRenderOptions,
+  options : Options,
 ) -> String {
   render_sequence_canvas(diagram, options).render()
 }

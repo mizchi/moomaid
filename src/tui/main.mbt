@@ -22,7 +22,7 @@ fn split_lines(s : String) -> Array[String] {
 
 ///|
 fn build_diagrams(width : Int) -> Array[DiagramEntry] {
-  let options : @moomaid.AsciiRenderOptions = {
+  let options : @moomaid.Options = {
     use_ascii: false,
     padding_x: 2,
     padding_y: 1,
@@ -104,9 +104,9 @@ fn build_diagrams(width : Int) -> Array[DiagramEntry] {
   let entries : Array[DiagramEntry] = []
   let mut image_id = 1
   for item in sources {
-    let rendered = @moomaid.render_mermaid_ascii(item.1, options~)
+    let rendered = @moomaid.render_to_string(item.1, options~)
     let lines = split_lines(rendered)
-    let svg_str = @moomaid.render_mermaid(item.1)
+    let svg_str = @moomaid.experimental_render_to_svg(item.1)
     let svg_commands = match
       render_svg_to_kitty_commands(svg_str, px_width, px_height, image_id) {
       Some(cmds) => cmds

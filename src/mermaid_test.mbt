@@ -4,7 +4,7 @@ test "parse flowchart" {
     #|graph TD
     #|  A[Start] --> B[End]
     #|
-  let diagram = parse_mermaid_text(text)
+  let diagram = parse(text)
   inspect(
     diagram,
     content=(
@@ -19,7 +19,7 @@ test "render flowchart ascii snapshot" {
     #|graph TD
     #|  A --> B
     #|
-  let ascii = render_mermaid_ascii(text)
+  let ascii = render_to_string(text)
   inspect(
     ascii,
     content=(
@@ -41,7 +41,7 @@ test "render flowchart LR ascii snapshot" {
     #|graph LR
     #|  A --> B
     #|
-  let ascii = render_mermaid_ascii(text)
+  let ascii = render_to_string(text)
   inspect(
     ascii,
     content=(
@@ -59,7 +59,7 @@ test "render state ascii snapshot" {
     #|  [*] --> Idle
     #|  Idle --> [*]
     #|
-  let ascii = render_mermaid_ascii(text)
+  let ascii = render_to_string(text)
   inspect(
     ascii,
     content=(
@@ -87,7 +87,7 @@ test "render sequence ascii snapshot" {
     #|  participant Bob
     #|  Alice->>Bob: Hello
     #|
-  let ascii = render_mermaid_ascii(text)
+  let ascii = render_to_string(text)
   inspect(
     ascii,
     content=(
@@ -109,7 +109,7 @@ test "render class ascii snapshot" {
     #|  Animal : +int age
     #|  Animal : +eat()
     #|
-  let ascii = render_mermaid_ascii(text)
+  let ascii = render_to_string(text)
   inspect(
     ascii,
     content=(
@@ -129,7 +129,7 @@ test "render er ascii snapshot" {
     #|erDiagram
     #|  CUSTOMER ||--o{ ORDER : places
     #|
-  let ascii = render_mermaid_ascii(text)
+  let ascii = render_to_string(text)
   inspect(
     ascii,
     content=(
@@ -151,7 +151,7 @@ test "render svg has correct structure" {
     #|graph TD
     #|  A --> B
     #|
-  let svg = render_mermaid(text)
+  let svg = experimental_render_to_svg(text)
   assert_true(svg.contains("<svg"))
   assert_true(svg.contains("<g class=\"edges\">"))
   assert_true(svg.contains("<g class=\"nodes\">"))
@@ -159,11 +159,15 @@ test "render svg has correct structure" {
 }
 
 ///|
-test "render svg with syntree theme" {
-  let theme = @highlight.github_dark()
-  let colors = from_shiki_theme(theme)
-  assert_true(colors.bg == theme.background)
-  assert_true(colors.fg == theme.foreground)
+test "svg_options_from_theme returns options for known theme" {
+  let opts = svg_options_from_theme("github-dark")
+  assert_true(opts is Some(_))
+}
+
+///|
+test "svg_options_from_theme returns None for unknown theme" {
+  let opts = svg_options_from_theme("nonexistent")
+  assert_true(opts is None)
 }
 
 ///|
@@ -173,7 +177,7 @@ test "render sequence svg structure" {
     #|  Alice->>Bob: Hi
     #|  Bob-->>Alice: Hey
     #|
-  let svg = render_mermaid(text)
+  let svg = experimental_render_to_svg(text)
   assert_true(svg.contains("<g class=\"lifelines\">"))
   assert_true(svg.contains("<g class=\"actors\">"))
   assert_true(svg.contains("<g class=\"messages\">"))
@@ -181,11 +185,13 @@ test "render sequence svg structure" {
 }
 
 ///|
-test "canvas render trimmed" {
-  let canvas = Canvas::new(5, 3)
-  let rendered = canvas.render()
-  // Empty canvas renders to empty string (all blank lines trimmed)
-  inspect(rendered, content="")
+test "render_to_string returns non-empty" {
+  let text =
+    #|graph TD
+    #|  A --> B
+    #|
+  let ascii = render_to_string(text)
+  assert_true(ascii.length() > 0)
 }
 
 ///|
@@ -195,7 +201,7 @@ test "render flowchart with edge label" {
     #|  A -->|yes| B
     #|  A -->|no| C
     #|
-  let ascii = render_mermaid_ascii(text)
+  let ascii = render_to_string(text)
   inspect(
     ascii,
     content=(
@@ -217,7 +223,7 @@ test "parse chained edges" {
     #|graph LR
     #|  Input --> Process --> Output
     #|
-  let diagram = parse_mermaid_text(text)
+  let diagram = parse(text)
   inspect(
     diagram,
     content=(
@@ -235,7 +241,7 @@ test "render flow td full diagram" {
     #|  B -->|no| D[Retry]
     #|  D --> B
     #|
-  let ascii = render_mermaid_ascii(text)
+  let ascii = render_to_string(text)
   inspect(
     ascii,
     content=(
@@ -264,14 +270,14 @@ test "render flowchart with max_width" {
     #|  A --> B
     #|  A --> C
     #|
-  let options : @moomaid.AsciiRenderOptions = {
+  let options : @moomaid.Options = {
     use_ascii: false,
     padding_x: 2,
     padding_y: 1,
     box_border_padding: 1,
     max_width: 40,
   }
-  let ascii = @moomaid.render_mermaid_ascii(text, options~)
+  let ascii = @moomaid.render_to_string(text, options~)
   inspect(
     ascii,
     content=(
@@ -295,14 +301,14 @@ test "render sequence with max_width" {
     #|  participant Bob
     #|  Alice->>Bob: Hello
     #|
-  let options : @moomaid.AsciiRenderOptions = {
+  let options : @moomaid.Options = {
     use_ascii: false,
     padding_x: 2,
     padding_y: 1,
     box_border_padding: 1,
     max_width: 60,
   }
-  let ascii = @moomaid.render_mermaid_ascii(text, options~)
+  let ascii = @moomaid.render_to_string(text, options~)
   inspect(
     ascii,
     content=(
@@ -323,6 +329,6 @@ test "render svg bezier edges" {
     #|  A --> B
     #|  A --> C
     #|
-  let svg = render_mermaid(text)
+  let svg = experimental_render_to_svg(text)
   assert_true(svg.contains("<path d=\"M"))
 }

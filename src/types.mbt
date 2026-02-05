@@ -80,13 +80,13 @@ pub enum MermaidDiagram {
 } derive(Show, Eq)
 
 ///|
-pub struct Point {
+struct Point {
   x : Int
   y : Int
 } derive(Show, Eq)
 
 ///|
-pub struct LayoutBox {
+struct LayoutBox {
   x : Int
   y : Int
   width : Int
@@ -94,20 +94,20 @@ pub struct LayoutBox {
 } derive(Show, Eq)
 
 ///|
-pub struct PositionedNode {
+struct PositionedNode {
   node : GraphNode
   box : LayoutBox
 } derive(Show, Eq)
 
 ///|
-pub struct PositionedEdge {
+struct PositionedEdge {
   edge : GraphEdge
   start : Point
   end : Point
 } derive(Show, Eq)
 
 ///|
-pub struct PositionedGraph {
+struct PositionedGraph {
   nodes : Array[PositionedNode]
   edges : Array[PositionedEdge]
   width : Int
@@ -117,13 +117,13 @@ pub struct PositionedGraph {
 } derive(Show, Eq)
 
 ///|
-pub struct PositionedActor {
+struct PositionedActor {
   actor : SequenceActor
   box : LayoutBox
 } derive(Show, Eq)
 
 ///|
-pub struct PositionedMessage {
+struct PositionedMessage {
   message : SequenceMessage
   start : Point
   end : Point
@@ -131,7 +131,7 @@ pub struct PositionedMessage {
 } derive(Show, Eq)
 
 ///|
-pub struct PositionedSequence {
+struct PositionedSequence {
   actors : Array[PositionedActor]
   messages : Array[PositionedMessage]
   width : Int
