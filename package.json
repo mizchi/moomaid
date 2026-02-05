@@ -1,0 +1,34 @@
+{
+  "name": "moomaid",
+  "version": "0.1.0",
+  "description": "Mermaid diagram renderer for MoonBit (ASCII and SVG output)",
+  "type": "module",
+  "main": "./_build/js/release/build/moomaid.js",
+  "types": "./_build/js/release/build/moomaid.d.ts",
+  "exports": {
+    ".": {
+      "import": "./_build/js/release/build/moomaid.js",
+      "types": "./_build/js/release/build/moomaid.d.ts"
+    }
+  },
+  "bin": {
+    "moomaid": "./bin/moomaid.js"
+  },
+  "scripts": {
+    "build": "moon build --target js",
+    "prepublishOnly": "moon build --target js"
+  },
+  "files": [
+    "_build/js/release/build/moomaid.js",
+    "_build/js/release/build/moomaid.d.ts",
+    "_build/js/release/build/moonbit.d.ts",
+    "_build/js/release/build/cli/cli.js",
+    "bin/moomaid.js"
+  ],
+  "keywords": ["mermaid", "diagram", "ascii", "svg", "flowchart", "sequence", "moonbit"],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mizchi/moomaid.git"
+  }
+}

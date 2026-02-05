@@ -10,10 +10,10 @@
     "moonbitlang/x": "0.4.40"
   },
   "readme": "README.mbt.md",
-  "repository": "",
+  "repository": "https://github.com/mizchi/moomaid",
   "license": "Apache-2.0",
-  "keywords": [],
-  "description": "",
+  "keywords": ["mermaid", "diagram", "ascii", "svg", "flowchart", "sequence"],
+  "description": "Mermaid diagram renderer for MoonBit (ASCII and SVG output)",
   "source": "src",
   "preferred-target": "js"
 }

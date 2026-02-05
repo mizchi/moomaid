@@ -4,34 +4,29 @@ fn print_usage() -> Unit {
   println("")
   println("Usage:")
   println("  moomaid [options] <file>")
-  println("  cat diagram.mmd | just cli-stdin [options]")
+  println("  moomaid [options] -          # read from stdin")
   println("")
   println("Options:")
   println("  --svg          Output SVG (default: ASCII)")
   println("  --ascii        Output ASCII art")
   println("  --width <n>    Max width for ASCII (default: 80)")
+  println("  -              Read from stdin")
   println("  --help         Show this help")
   println("")
   println("Examples:")
-  println("  # Render from file")
+  println("  # Build and run with node")
+  println("  moon build src/cli --target js")
+  println("  node _build/js/release/build/cli/cli.js diagram.mmd")
+  println("")
+  println("  # Pipe from stdin")
+  println("  echo 'graph LR; A --> B' | node _build/js/release/build/cli/cli.js -")
+  println("")
+  println("  # SVG output")
+  println("  node _build/js/release/build/cli/cli.js --svg diagram.mmd")
+  println("")
+  println("  # Via just")
   println("  just cli diagram.mmd")
-  println("  just cli --svg diagram.mmd")
-  println("")
-  println("  # Render from stdin (via just)")
-  println("  echo 'graph LR")
-  println("    A --> B --> C' | just cli-stdin")
-  println("")
-  println("  # Sequence diagram from stdin")
-  println("  cat <<EOF | just cli-stdin")
-  println("  sequenceDiagram")
-  println("    participant Client")
-  println("    participant API")
-  println("    participant DB")
-  println("    Client->>API: Request")
-  println("    API->>DB: Query")
-  println("    DB-->>API: Result")
-  println("    API-->>Client: Response")
-  println("  EOF")
+  println("  just cli-stdin < diagram.mmd")
   println("")
   println("--- Diagram Types ---")
   println("")
@@ -59,7 +54,12 @@ fn render(text : String, svg_mode : Bool, width : Int) -> Unit {
 
 ///|
 fn main {
-  let args = @env.args()
+  let raw_args = @env.args()
+  // Skip node path and script path (process.argv[0], [1])
+  let args : Array[String] = []
+  for i = 2; i < raw_args.length(); i = i + 1 {
+    args.push(raw_args[i])
+  }
   let mut file_path : String? = None
   let mut svg_mode = false
   let mut width = 80
@@ -78,6 +78,8 @@ fn main {
       if i < args.length() {
         width = @strconv.parse_int(args[i]) catch { _ => 80 }
       }
+    } else if arg == "-" {
+      file_path = Some("/dev/stdin")
     } else if not(arg.has_prefix("--")) {
       file_path = Some(arg)
     }
@@ -87,26 +89,26 @@ fn main {
     print_usage()
     return
   }
-  match file_path {
+  let path = match file_path {
+    Some(p) => p
     None => {
-      println("Error: no input file specified")
+      println("Error: no input file specified (use - for stdin)")
       println("")
       print_usage()
-    }
-    Some(path) => {
-      let text = @fs.read_file_to_string(path) catch {
-        err => {
-          println("Error: " + err.to_string())
-          return
-        }
-      }
-      if text.is_empty() {
-        println("Error: empty input")
-        println("")
-        print_usage()
-        return
-      }
-      render(text, svg_mode, width)
+      return
     }
   }
+  let text = @fs.read_file_to_string(path) catch {
+    err => {
+      println("Error: " + err.to_string())
+      return
+    }
+  }
+  if text.is_empty() {
+    println("Error: empty input")
+    println("")
+    print_usage()
+    return
+  }
+  render(text, svg_mode, width)
 }

@@ -5,3 +5,17 @@ import {
   "mizchi/crater/style",
   "mizchi/crater/layout/node",
 }
+
+options(
+  "link": {
+    "js": {
+      "exports": [
+        "parse",
+        "render_to_string",
+        "experimental_render_to_svg",
+        "svg_options_from_theme",
+      ],
+      "format": "esm",
+    },
+  },
+)

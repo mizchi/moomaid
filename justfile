@@ -26,16 +26,22 @@ test-update:
 run:
     moon run src/main --target {{target}}
 
+# Build JS bundle
+build:
+    moon build --target js
+
 # Run CLI (ASCII/SVG renderer)
 cli *args:
-    moon run src/cli --target {{target}} -- {{args}}
+    moon build src/cli --target js
+    node _build/js/release/build/cli/cli.js {{args}}
 
-# Run CLI from stdin (pipe-friendly)
+# Run CLI from stdin (pipe-friendly, via temp file)
 cli-stdin *args:
     #!/usr/bin/env bash
+    moon build src/cli --target js
     tmp=$(mktemp /tmp/moomaid-XXXXXX.mmd)
     cat > "$tmp"
-    moon run src/cli --target {{target}} -- {{args}} "$tmp"
+    node _build/js/release/build/cli/cli.js {{args}} "$tmp"
     rm -f "$tmp"
 
 # Run TUI viewer
