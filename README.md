@@ -5,6 +5,10 @@ Mermaid diagram renderer written in MoonBit. Outputs ASCII art or SVG.
 ## Install
 
 ```bash
+# npm
+npx moomaid -h
+
+# Moonbit
 moon add mizchi/moomaid
 ```
 
