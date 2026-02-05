@@ -30,6 +30,14 @@ run:
 cli *args:
     moon run src/cli --target {{target}} -- {{args}}
 
+# Run CLI from stdin (pipe-friendly)
+cli-stdin *args:
+    #!/usr/bin/env bash
+    tmp=$(mktemp /tmp/moomaid-XXXXXX.mmd)
+    cat > "$tmp"
+    moon run src/cli --target {{target}} -- {{args}} "$tmp"
+    rm -f "$tmp"
+
 # Run TUI viewer
 tui:
     moon run src/tui --target {{target}}

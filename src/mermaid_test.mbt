@@ -264,14 +264,14 @@ test "render flowchart with max_width" {
     #|  A --> B
     #|  A --> C
     #|
-  let options : @mermaid.AsciiRenderOptions = {
+  let options : @moomaid.AsciiRenderOptions = {
     use_ascii: false,
     padding_x: 2,
     padding_y: 1,
     box_border_padding: 1,
     max_width: 40,
   }
-  let ascii = @mermaid.render_mermaid_ascii(text, options~)
+  let ascii = @moomaid.render_mermaid_ascii(text, options~)
   inspect(
     ascii,
     content=(
@@ -295,14 +295,14 @@ test "render sequence with max_width" {
     #|  participant Bob
     #|  Alice->>Bob: Hello
     #|
-  let options : @mermaid.AsciiRenderOptions = {
+  let options : @moomaid.AsciiRenderOptions = {
     use_ascii: false,
     padding_x: 2,
     padding_y: 1,
     box_border_padding: 1,
     max_width: 60,
   }
-  let ascii = @mermaid.render_mermaid_ascii(text, options~)
+  let ascii = @moomaid.render_mermaid_ascii(text, options~)
   inspect(
     ascii,
     content=(

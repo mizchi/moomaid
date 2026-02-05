@@ -22,7 +22,7 @@ fn split_lines(s : String) -> Array[String] {
 
 ///|
 fn build_diagrams(width : Int) -> Array[DiagramEntry] {
-  let options : @mermaid.AsciiRenderOptions = {
+  let options : @moomaid.AsciiRenderOptions = {
     use_ascii: false,
     padding_x: 2,
     padding_y: 1,
@@ -104,9 +104,9 @@ fn build_diagrams(width : Int) -> Array[DiagramEntry] {
   let entries : Array[DiagramEntry] = []
   let mut image_id = 1
   for item in sources {
-    let rendered = @mermaid.render_mermaid_ascii(item.1, options~)
+    let rendered = @moomaid.render_mermaid_ascii(item.1, options~)
     let lines = split_lines(rendered)
-    let svg_str = @mermaid.render_mermaid(item.1)
+    let svg_str = @moomaid.render_mermaid(item.1)
     let svg_commands = match
       render_svg_to_kitty_commands(svg_str, px_width, px_height, image_id) {
       Some(cmds) => cmds
@@ -120,13 +120,13 @@ fn build_diagrams(width : Int) -> Array[DiagramEntry] {
 
 ///|
 async fn main {
-  let (width, height) = @tui.get_terminal_size()
+  let (width, height) = @mtui.get_terminal_size()
   let diagrams = build_diagrams(width)
   let active_tab = @signals.signal(0)
   let scroll_offset = @signals.signal(0)
   let svg_mode = @signals.signal(false)
-  @tui.print_raw(VNodeApp::init_terminal())
-  @tui.enable_raw_mode()
+  @mtui.print_raw(VNodeApp::init_terminal())
+  @mtui.enable_raw_mode()
   fn do_render() {
     let tab_idx = active_tab.get()
     let offset = scroll_offset.get()
@@ -166,7 +166,7 @@ async fn main {
       for cmd in diagram.svg_commands {
         sb.write_string(cmd)
       }
-      @tui.print_raw(sb.to_string())
+      @mtui.print_raw(sb.to_string())
     } else {
       // ASCII mode
       let content_h = height - 2
@@ -206,58 +206,62 @@ async fn main {
         )
       }
       sb.write_string(esc + "K" + esc + "0m")
-      @tui.print_raw(sb.to_string())
+      @mtui.print_raw(sb.to_string())
     }
   }
 
   do_render()
   let mut running = true
   while running {
-    let key = @tui.read_key()
+    let key = @mtui.read_key()
     if key.length() == 0 {
       continue
     }
-    let event = @tui.parse_input(key)
+    let event = @mtui.parse_input(key)
     let mut need_render = true
     match event {
-      @tui.InputEvent::Key(key_event) =>
+      @mtui.InputEvent::Key(key_event) =>
         match key_event {
-          @tui.KeyEvent::Char('q', @tui.KeyModifier::None) => running = false
-          @tui.KeyEvent::Char('c', @tui.KeyModifier::Ctrl) => running = false
-          @tui.KeyEvent::Special(@tui.SpecialKey::Escape, _) => running = false
-          @tui.KeyEvent::Special(@tui.SpecialKey::Tab, @tui.KeyModifier::None) => {
+          @mtui.KeyEvent::Char('q', @mtui.KeyModifier::None) => running = false
+          @mtui.KeyEvent::Char('c', @mtui.KeyModifier::Ctrl) => running = false
+          @mtui.KeyEvent::Special(@mtui.SpecialKey::Escape, _) =>
+            running = false
+          @mtui.KeyEvent::Special(
+            @mtui.SpecialKey::Tab,
+            @mtui.KeyModifier::None
+          ) => {
             let cur = active_tab.get()
             let next = if cur + 1 >= diagrams.length() { 0 } else { cur + 1 }
             active_tab.set(next)
             scroll_offset.set(0)
             if svg_mode.get() {
-              @tui.print_raw(kitty_delete_all_visible())
+              @mtui.print_raw(kitty_delete_all_visible())
             }
           }
-          @tui.KeyEvent::Special(@tui.SpecialKey::BackTab, _) => {
+          @mtui.KeyEvent::Special(@mtui.SpecialKey::BackTab, _) => {
             let cur = active_tab.get()
             let prev = if cur == 0 { diagrams.length() - 1 } else { cur - 1 }
             active_tab.set(prev)
             scroll_offset.set(0)
             if svg_mode.get() {
-              @tui.print_raw(kitty_delete_all_visible())
+              @mtui.print_raw(kitty_delete_all_visible())
             }
           }
-          @tui.KeyEvent::Special(@tui.SpecialKey::Up, _) => {
+          @mtui.KeyEvent::Special(@mtui.SpecialKey::Up, _) => {
             let cur = scroll_offset.get()
             if cur > 0 {
               scroll_offset.set(cur - 1)
             }
           }
-          @tui.KeyEvent::Special(@tui.SpecialKey::Down, _) => {
+          @mtui.KeyEvent::Special(@mtui.SpecialKey::Down, _) => {
             let cur = scroll_offset.get()
             scroll_offset.set(cur + 1)
           }
-          @tui.KeyEvent::Char('s', @tui.KeyModifier::None) => {
+          @mtui.KeyEvent::Char('s', @mtui.KeyModifier::None) => {
             let entering_ascii = svg_mode.get()
             svg_mode.set(not(entering_ascii))
             // Clear screen and kitty images when switching modes
-            @tui.print_raw(kitty_delete_all_visible() + esc + "2J")
+            @mtui.print_raw(kitty_delete_all_visible() + esc + "2J")
           }
           _ => need_render = false
         }
@@ -267,6 +271,6 @@ async fn main {
       do_render()
     }
   }
-  @tui.cleanup_stdin()
-  @tui.print_raw(VNodeApp::restore_terminal())
+  @mtui.cleanup_stdin()
+  @mtui.print_raw(VNodeApp::restore_terminal())
 }

@@ -1,8 +1,10 @@
 ///|
 fn print_usage() -> Unit {
-  println("Usage: mermaid-cli [options] [file]")
+  println("moomaid - Mermaid diagram renderer for MoonBit")
   println("")
-  println("Render Mermaid diagrams to ASCII or SVG.")
+  println("Usage:")
+  println("  moomaid [options] <file>")
+  println("  cat diagram.mmd | just cli-stdin [options]")
   println("")
   println("Options:")
   println("  --svg          Output SVG (default: ASCII)")
@@ -11,38 +13,48 @@ fn print_usage() -> Unit {
   println("  --help         Show this help")
   println("")
   println("Examples:")
-  println("  moon run src/cli --target js -- diagram.mmd")
-  println("  moon run src/cli --target js -- --svg diagram.mmd")
+  println("  # Render from file")
+  println("  just cli diagram.mmd")
+  println("  just cli --svg diagram.mmd")
+  println("")
+  println("  # Render from stdin (via just)")
+  println("  echo 'graph LR")
+  println("    A --> B --> C' | just cli-stdin")
+  println("")
+  println("  # Sequence diagram from stdin")
+  println("  cat <<EOF | just cli-stdin")
+  println("  sequenceDiagram")
+  println("    participant Client")
+  println("    participant API")
+  println("    participant DB")
+  println("    Client->>API: Request")
+  println("    API->>DB: Query")
+  println("    DB-->>API: Result")
+  println("    API-->>Client: Response")
+  println("  EOF")
   println("")
   println("--- Diagram Types ---")
   println("")
-  println("Flowchart (graph relationships, data flow):")
-  println("  graph LR")
-  println("    Input --> Process --> Output")
-  println("")
-  println("  graph TD")
-  println("    Start[Start] --> Auth{Auth}")
-  println("    Auth -->|pass| Load[Load Data]")
-  println("    Auth -->|fail| Error[Error Page]")
-  println("    Load --> Validate{Validate}")
-  println("    Validate -->|ok| Process[Process]")
-  println("    Validate -->|ng| Error")
-  println("    Process --> Save[Save]")
-  println("    Save --> Done[Done]")
-  println("    Error --> Done")
-  println("")
-  println("Sequence (layer boundaries, API calls):")
-  println("  sequenceDiagram")
-  println("    participant Browser")
-  println("    participant API")
-  println("    participant Auth")
-  println("    participant DB")
-  println("    Browser->>API: POST /login")
-  println("    API->>Auth: Validate token")
-  println("    Auth-->>API: OK")
-  println("    API->>DB: SELECT user")
-  println("    DB-->>API: User data")
-  println("    API-->>Browser: 200 JSON")
+  println("graph LR / graph TD  : Flowchart (data flow, dependencies)")
+  println("sequenceDiagram      : Sequence  (layer boundaries, API calls)")
+  println("stateDiagram-v2      : State machine")
+  println("classDiagram         : Class diagram")
+}
+
+///|
+fn render(text : String, svg_mode : Bool, width : Int) -> Unit {
+  if svg_mode {
+    println(@moomaid.render_mermaid(text))
+  } else {
+    let options : @moomaid.AsciiRenderOptions = {
+      use_ascii: false,
+      padding_x: 2,
+      padding_y: 1,
+      box_border_padding: 1,
+      max_width: width,
+    }
+    println(@moomaid.render_mermaid_ascii(text, options~))
+  }
 }
 
 ///|
@@ -88,18 +100,13 @@ fn main {
           return
         }
       }
-      if svg_mode {
-        println(@mermaid.render_mermaid(text))
-      } else {
-        let options : @mermaid.AsciiRenderOptions = {
-          use_ascii: false,
-          padding_x: 2,
-          padding_y: 1,
-          box_border_padding: 1,
-          max_width: width,
-        }
-        println(@mermaid.render_mermaid_ascii(text, options~))
+      if text.is_empty() {
+        println("Error: empty input")
+        println("")
+        print_usage()
+        return
       }
+      render(text, svg_mode, width)
     }
   }
 }

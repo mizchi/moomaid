@@ -1,6 +1,6 @@
 import {
-  "mizchi/mermaid",
-  "mizchi/tui",
+  "mizchi/moomaid",
+  "mizchi/tui" as @mtui,
   "mizchi/tui/vnode",
   "mizchi/tui/image",
   "mizchi/crater/svg",

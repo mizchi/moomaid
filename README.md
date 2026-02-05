@@ -1,64 +1,120 @@
-# MoonBit Template
+# moomaid
 
-A minimal MoonBit project template with CI, justfile, and AI coding assistant support.
+Mermaid diagram renderer written in MoonBit. Outputs ASCII art or SVG.
 
-## Usage
-
-Clone this repository and start coding:
+## Install
 
 ```bash
-git clone https://github.com/mizchi/moonbit-template my-project
-cd my-project
+moon add mizchi/moomaid
 ```
 
-Update `moon.mod.json` with your module name:
+## CLI
 
-```json
-{
-  "name": "your-username/your-project",
-  ...
+```bash
+# Render from file
+just cli diagram.mmd
+just cli --svg diagram.mmd
+
+# Render from stdin
+echo 'graph LR
+  A --> B --> C' | just cli-stdin
+
+# Sequence diagram from stdin
+cat <<EOF | just cli-stdin
+sequenceDiagram
+  participant Client
+  participant API
+  participant DB
+  Client->>API: Request
+  API->>DB: Query
+  DB-->>API: Result
+  API-->>Client: Response
+EOF
+```
+
+### Options
+
+```
+--svg          Output SVG (default: ASCII)
+--ascii        Output ASCII art
+--width <n>    Max width for ASCII (default: 80)
+--help         Show help
+```
+
+## Diagram Types
+
+### Flowchart (`graph LR` / `graph TD`)
+
+Use for visualizing data flow, module dependencies, and process graphs.
+
+```mermaid
+graph LR
+  Input --> Process --> Output
+```
+
+```mermaid
+graph TD
+  Start[Start] --> Auth{Auth}
+  Auth -->|pass| Load[Load Data]
+  Auth -->|fail| Error[Error Page]
+  Load --> Validate{Validate}
+  Validate -->|ok| Process[Process]
+  Validate -->|ng| Error
+  Process --> Save[Save]
+  Save --> Done[Done]
+  Error --> Done
+```
+
+### Sequence Diagram (`sequenceDiagram`)
+
+Use for describing layer boundaries and API call flows.
+
+```mermaid
+sequenceDiagram
+  participant Browser
+  participant API
+  participant Auth
+  participant DB
+  Browser->>API: POST /login
+  API->>Auth: Validate token
+  Auth-->>API: OK
+  API->>DB: SELECT user
+  DB-->>API: User data
+  API-->>Browser: 200 JSON
+```
+
+### Other supported types
+
+- `stateDiagram-v2` - State machine diagrams
+- `classDiagram` - Class diagrams
+
+## Library Usage
+
+```moonbit
+let svg = @moomaid.render_mermaid("graph LR\n  A --> B")
+
+let options : @moomaid.AsciiRenderOptions = {
+  use_ascii: false,
+  padding_x: 2,
+  padding_y: 1,
+  box_border_padding: 1,
+  max_width: 80,
 }
+let ascii = @moomaid.render_mermaid_ascii("graph LR\n  A --> B", options~)
 ```
 
-## Quick Commands
+## TUI Viewer
+
+Interactive terminal viewer with tab switching and Kitty graphics protocol support.
 
 ```bash
-just           # check + test
-just fmt       # format code
-just check     # type check
-just test      # run tests
-just test-update  # update snapshot tests
-just run       # run main
-just info      # generate type definition files
+just tui
 ```
 
-## Project Structure
-
-```
-my-project/
-├── moon.mod.json      # Module configuration
-├── src/
-│   ├── moon.pkg       # Package configuration
-│   ├── lib.mbt        # Library code
-│   ├── lib_test.mbt   # Tests
-│   ├── lib_bench.mbt  # Benchmarks
-│   ├── API.mbt.md     # Doc tests
-│   └── main/
-│       ├── moon.pkg
-│       └── main.mbt   # Entry point
-├── justfile           # Task runner
-└── .github/workflows/
-    └── ci.yml         # GitHub Actions CI
-```
-
-## Features
-
-- `src/` directory structure with `moon.pkg` format
-- Snapshot testing with `inspect()`
-- Doc tests in `.mbt.md` files
-- Benchmarks with `moon bench`
-- GitHub Actions CI
-- Claude Code / GitHub Copilot support (AGENTS.md)
+- `Tab` / `Shift+Tab`: Switch diagrams
+- `Up` / `Down`: Scroll
+- `s`: Toggle ASCII / SVG mode (Kitty-compatible terminals)
+- `q`: Quit
 
 ## License
 
