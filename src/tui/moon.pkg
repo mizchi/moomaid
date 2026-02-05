@@ -2,8 +2,13 @@ import {
   "mizchi/mermaid",
   "mizchi/tui",
   "mizchi/tui/vnode",
+  "mizchi/tui/image",
+  "mizchi/crater/svg",
   "mizchi/signals",
+  "moonbitlang/core/buffer",
   "moonbitlang/async",
 }
 
-options("is-main": true)
+options(
+  "is-main": true,
+)

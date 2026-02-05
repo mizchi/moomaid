@@ -351,6 +351,7 @@ pub fn Canvas::render(self : Canvas) -> String {
   // Remove trailing blank lines
   while lines.length() > 0 && lines[lines.length() - 1] == "" {
     let _ = lines.pop()
+
   }
   lines.join("\n")
 }
@@ -454,11 +455,7 @@ pub fn render_sequence_canvas(
   for msg in layout.messages {
     let dx = msg.end.x - msg.start.x
     canvas.draw_hline(msg.start.x, msg.end.x, msg.y, options.use_ascii)
-    canvas.set(
-      msg.end.x,
-      msg.end.y,
-      arrow_char(dx, 0, options.use_ascii),
-    )
+    canvas.set(msg.end.x, msg.end.y, arrow_char(dx, 0, options.use_ascii))
     if msg.message.text.length() > 0 {
       canvas.draw_text(msg.start.x + 1, msg.y - 1, msg.message.text)
     }

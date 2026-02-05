@@ -50,6 +50,8 @@ pub fn render_mermaid_ascii(String, options? : AsciiRenderOptions) -> String
 
 pub fn render_mermaid_canvas(String, options? : AsciiRenderOptions) -> Canvas
 
+pub fn render_options_from_colors(DiagramColors, font? : String, transparent? : Bool) -> RenderOptions
+
 pub fn render_sequence_ascii(SequenceDiagram, AsciiRenderOptions) -> String
 
 pub fn render_sequence_canvas(SequenceDiagram, AsciiRenderOptions) -> Canvas
@@ -82,11 +84,12 @@ pub enum ActorKind {
 pub impl Eq for ActorKind
 pub impl Show for ActorKind
 
-pub struct AsciiRenderOptions {
+pub(all) struct AsciiRenderOptions {
   use_ascii : Bool
   padding_x : Int
   padding_y : Int
   box_border_padding : Int
+  max_width : Int
 }
 pub impl Eq for AsciiRenderOptions
 pub impl Show for AsciiRenderOptions

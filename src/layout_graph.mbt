@@ -205,18 +205,33 @@ pub fn layout_graph(
   }
   let main_gap = @types.Dimension::Length(gap_main)
   let cross_gap = @types.Dimension::Length(gap_cross)
+  let available_w = if options.max_width > 0 {
+    options.max_width.to_double()
+  } else {
+    10000.0
+  }
+  let cross_justify : @types.Alignment = if options.max_width > 0 {
+    @types.Alignment::SpaceEvenly
+  } else {
+    @types.Alignment::Center
+  }
+  let root_align : @types.Alignment = if options.max_width > 0 {
+    @types.Alignment::Stretch
+  } else {
+    @types.Alignment::Center
+  }
   let root_style = make_flex_style(
     main_dir,
     main_gap,
     @types.Alignment::Start,
-    @types.Alignment::Center,
+    root_align,
   )
   let level_children : Array[@node.Node] = []
   for i, group in grouped {
     let level_style = make_flex_style(
       cross_dir,
       cross_gap,
-      @types.Alignment::Center,
+      cross_justify,
       @types.Alignment::Center,
     )
     let node_children : Array[@node.Node] = []
@@ -231,7 +246,7 @@ pub fn layout_graph(
   let root = @node.Node::new("root", root_style, level_children)
   let crater_layout = @crater.compute_layout(
     root,
-    @types.Size::new(10000.0, 10000.0),
+    @types.Size::new(available_w, 10000.0),
   )
   let layout_map : Map[String, LayoutBox] = Map::new()
   for level_layout in crater_layout.children {
@@ -301,10 +316,20 @@ pub fn layout_sequence(
   let actor_gap = 6.0
   let top_margin = 0
   let actor_height = 3
+  let seq_available_w = if options.max_width > 0 {
+    options.max_width.to_double()
+  } else {
+    10000.0
+  }
+  let seq_justify : @types.Alignment = if options.max_width > 0 {
+    @types.Alignment::SpaceEvenly
+  } else {
+    @types.Alignment::Start
+  }
   let actor_style = make_flex_style(
     @types.FlexDirection::Row,
     @types.Dimension::Length(actor_gap),
-    @types.Alignment::Start,
+    seq_justify,
     @types.Alignment::Start,
   )
   let actor_nodes : Array[@node.Node] = []
@@ -317,7 +342,7 @@ pub fn layout_sequence(
   let actor_root = @node.Node::new("actors", actor_style, actor_nodes)
   let actor_layout = @crater.compute_layout(
     actor_root,
-    @types.Size::new(10000.0, 10000.0),
+    @types.Size::new(seq_available_w, 10000.0),
   )
   let actors : Array[PositionedActor] = []
   let actor_map : Map[String, PositionedActor] = Map::new()

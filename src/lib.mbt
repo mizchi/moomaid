@@ -49,8 +49,8 @@ pub fn from_shiki_theme(theme : @highlight.HighlightTheme) -> DiagramColors {
 ///|
 pub fn render_options_from_colors(
   colors : DiagramColors,
-  font~ : String = "monospace",
-  transparent~ : Bool = false,
+  font? : String = "monospace",
+  transparent? : Bool = false,
 ) -> RenderOptions {
   {
     bg: Some(colors.bg),

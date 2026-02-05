@@ -31,7 +31,6 @@ test "render flowchart ascii snapshot" {
       #|┌───┐
       #|│ B │
       #|└───┘
-
     ),
   )
 }
@@ -49,7 +48,6 @@ test "render flowchart LR ascii snapshot" {
       #|┌───┐  ┌───┐
       #|│ A │──│ B │
       #|└───┘  └───┘
-
     ),
   )
 }
@@ -77,10 +75,6 @@ test "render state ascii snapshot" {
       #|   │
       #|   ▼
       #|   ◎
-
-
-
-
     ),
   )
 }
@@ -103,8 +97,6 @@ test "render sequence ascii snapshot" {
       #|       │Hello          │
       #|       ────────────────▶
       #|       │               │
-
-
     ),
   )
 }
@@ -127,7 +119,6 @@ test "render class ascii snapshot" {
       #|│ +int age │
       #|│ +eat()   │
       #|└──────────┘
-
     ),
   )
 }
@@ -150,7 +141,6 @@ test "render er ascii snapshot" {
       #| ┌───────┐
       #| │ ORDER │
       #| └───────┘
-
     ),
   )
 }
@@ -217,9 +207,6 @@ test "render flowchart with edge label" {
       #|┌───┐    ┌───┐
       #|│ B │    │ C │
       #|└───┘    └───┘
-
-
-
     ),
   )
 }
@@ -231,10 +218,12 @@ test "parse chained edges" {
     #|  Input --> Process --> Output
     #|
   let diagram = parse_mermaid_text(text)
-  inspect(diagram, content=(
-    #|Graph({kind: Flowchart, direction: LR, nodes: [{id: "Input", label: "Input", shape: Rect, sections: [["Input"]]}, {id: "Process", label: "Process", shape: Rect, sections: [["Process"]]}, {id: "Output", label: "Output", shape: Rect, sections: [["Output"]]}], edges: [{from: "Input", to: "Process", label: None}, {from: "Process", to: "Output", label: None}]})
-
-  ))
+  inspect(
+    diagram,
+    content=(
+      #|Graph({kind: Flowchart, direction: LR, nodes: [{id: "Input", label: "Input", shape: Rect, sections: [["Input"]]}, {id: "Process", label: "Process", shape: Rect, sections: [["Process"]]}, {id: "Output", label: "Output", shape: Rect, sections: [["Output"]]}], edges: [{from: "Input", to: "Process", label: None}, {from: "Process", to: "Output", label: None}]})
+    ),
+  )
 }
 
 ///|
@@ -247,24 +236,84 @@ test "render flow td full diagram" {
     #|  D --> B
     #|
   let ascii = render_mermaid_ascii(text)
-  inspect(ascii, content=(
-    #|     ┌───────┐
-    #|     │ Start │
-    #|     └───────┘
-    #|         │
-    #|         │
-    #|       ╭───╮
-    #|       │ B │
-    #|       ╰───╯
-    #|     ┌─yes───no──┐
-    #|     │   │       │
-    #|┌─────────┐    ┌───┐
-    #|│ Success││    │ D │
-    #|└─────────┘    └───┘
-    #|         └───────┘
+  inspect(
+    ascii,
+    content=(
+      #|     ┌───────┐
+      #|     │ Start │
+      #|     └───────┘
+      #|         │
+      #|         │
+      #|       ╭───╮
+      #|       │ B │
+      #|       ╰───╯
+      #|     ┌─yes───no──┐
+      #|     │   │       │
+      #|┌─────────┐    ┌───┐
+      #|│ Success││    │ D │
+      #|└─────────┘    └───┘
+      #|         └───────┘
+    ),
+  )
+}
 
+///|
+test "render flowchart with max_width" {
+  let text =
+    #|graph TD
+    #|  A --> B
+    #|  A --> C
+    #|
+  let options : @mermaid.AsciiRenderOptions = {
+    use_ascii: false,
+    padding_x: 2,
+    padding_y: 1,
+    box_border_padding: 1,
+    max_width: 40,
+  }
+  let ascii = @mermaid.render_mermaid_ascii(text, options~)
+  inspect(
+    ascii,
+    content=(
+      #|    ┌───┐
+      #|    │ A │
+      #|    └───┘
+      #|  ┌───┴────┐
+      #|  │        │
+      #|┌───┐    ┌───┐
+      #|│ B │    │ C │
+      #|└───┘    └───┘
+    ),
+  )
+}
 
-  ))
+///|
+test "render sequence with max_width" {
+  let text =
+    #|sequenceDiagram
+    #|  participant Alice
+    #|  participant Bob
+    #|  Alice->>Bob: Hello
+    #|
+  let options : @mermaid.AsciiRenderOptions = {
+    use_ascii: false,
+    padding_x: 2,
+    padding_y: 1,
+    box_border_padding: 1,
+    max_width: 60,
+  }
+  let ascii = @mermaid.render_mermaid_ascii(text, options~)
+  inspect(
+    ascii,
+    content=(
+      #|  ┌─────────┐      ┌───────┐
+      #|  │ Alice   │      │ Bob   │
+      #|  └─────────┘      └───────┘
+      #|       │Hello          │
+      #|       ────────────────▶
+      #|       │               │
+    ),
+  )
 }
 
 ///|

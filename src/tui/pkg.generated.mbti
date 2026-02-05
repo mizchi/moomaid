@@ -1,0 +1,14 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/mermaid/tui"
+
+// Values
+
+// Errors
+
+// Types and methods
+type DiagramEntry
+
+// Type aliases
+
+// Traits
+

@@ -1,14 +1,18 @@
 {
-  "name": "mizchi/lib",
+  "name": "mizchi/mermaid",
   "version": "0.1.0",
   "deps": {
-    "moonbitlang/async": "0.16.2"
+    "moonbitlang/async": "0.16.2",
+    "mizchi/syntree": "0.2.1",
+    "mizchi/crater": "0.4.2",
+    "mizchi/tui": "0.5.0",
+    "mizchi/signals": "0.6.1"
   },
-  "source": "src",
-  "preferred-target": "js",
   "readme": "README.mbt.md",
   "repository": "",
   "license": "Apache-2.0",
   "keywords": [],
-  "description": ""
+  "description": "",
+  "source": "src",
+  "preferred-target": "js"
 }

@@ -38,10 +38,18 @@ async fn main {
     #|  Input --> Process --> Output
     #|
   let sb = StringBuilder::new()
-  sb.write_view("<!DOCTYPE html>\n<html><head><meta charset=\"utf-8\"><title>Mermaid SVG Preview</title>\n")
-  sb.write_view("<style>body{font-family:system-ui;background:#f8f8f8;padding:20px;max-width:1200px;margin:0 auto}\n")
-  sb.write_view("h2{color:#333;border-bottom:2px solid #ddd;padding-bottom:8px}\n")
-  sb.write_view(".card{background:white;border-radius:12px;padding:24px;margin:16px 0;box-shadow:0 2px 8px rgba(0,0,0,0.08)}\n")
+  sb.write_view(
+    "<!DOCTYPE html>\n<html><head><meta charset=\"utf-8\"><title>Mermaid SVG Preview</title>\n",
+  )
+  sb.write_view(
+    "<style>body{font-family:system-ui;background:#f8f8f8;padding:20px;max-width:1200px;margin:0 auto}\n",
+  )
+  sb.write_view(
+    "h2{color:#333;border-bottom:2px solid #ddd;padding-bottom:8px}\n",
+  )
+  sb.write_view(
+    ".card{background:white;border-radius:12px;padding:24px;margin:16px 0;box-shadow:0 2px 8px rgba(0,0,0,0.08)}\n",
+  )
   sb.write_view(".grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}\n")
   sb.write_view("@media(max-width:800px){.grid{grid-template-columns:1fr}}\n")
   sb.write_view("svg{max-width:100%;height:auto}</style></head><body>\n")
@@ -64,7 +72,9 @@ async fn main {
   sb.write_view("\n</div>\n")
   sb.write_view("</div>\n")
   sb.write_view("<h2>Dark Theme (GitHub Dark)</h2>\n")
-  sb.write_view("<div class=\"card\" style=\"background:#0d1117;padding:24px;border-radius:12px\">\n")
+  sb.write_view(
+    "<div class=\"card\" style=\"background:#0d1117;padding:24px;border-radius:12px\">\n",
+  )
   let theme = @mermaid.from_shiki_theme(@highlight.github_dark())
   let dark_options = @mermaid.render_options_from_colors(theme)
   sb.write_view(@mermaid.render_mermaid(flow, options=dark_options))
