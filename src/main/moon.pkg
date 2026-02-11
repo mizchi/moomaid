@@ -1,5 +1,5 @@
 import {
-  "mizchi/moomaid" as @mermaid,
+  "mizchi/moomaid" @mermaid,
   "moonbitlang/async",
 }
 

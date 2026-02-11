@@ -2,17 +2,24 @@
   "name": "mizchi/moomaid",
   "version": "0.1.0",
   "deps": {
-    "moonbitlang/async": "0.16.2",
-    "mizchi/syntree": "0.2.1",
-    "mizchi/crater": "0.4.2",
-    "mizchi/tui": "0.5.0",
-    "mizchi/signals": "0.6.1",
+    "moonbitlang/async": "0.16.6",
+    "mizchi/syntree": "0.2.3",
+    "mizchi/crater": "0.4.4",
+    "mizchi/tui": "0.6.0",
+    "mizchi/signals": "0.6.3",
     "moonbitlang/x": "0.4.40"
   },
   "readme": "README.mbt.md",
   "repository": "https://github.com/mizchi/moomaid",
   "license": "Apache-2.0",
-  "keywords": ["mermaid", "diagram", "ascii", "svg", "flowchart", "sequence"],
+  "keywords": [
+    "mermaid",
+    "diagram",
+    "ascii",
+    "svg",
+    "flowchart",
+    "sequence"
+  ],
   "description": "Mermaid diagram renderer for MoonBit (ASCII and SVG output)",
   "source": "src",
   "preferred-target": "js"

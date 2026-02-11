@@ -19,7 +19,9 @@ fn print_usage() -> Unit {
   println("  node _build/js/release/build/cli/cli.js diagram.mmd")
   println("")
   println("  # Pipe from stdin")
-  println("  echo 'graph LR; A --> B' | node _build/js/release/build/cli/cli.js -")
+  println(
+    "  echo 'graph LR; A --> B' | node _build/js/release/build/cli/cli.js -",
+  )
   println("")
   println("  # SVG output")
   println("  node _build/js/release/build/cli/cli.js --svg diagram.mmd")

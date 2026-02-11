@@ -351,7 +351,6 @@ fn Canvas::render(self : Canvas) -> String {
   // Remove trailing blank lines
   while lines.length() > 0 && lines[lines.length() - 1] == "" {
     let _ = lines.pop()
-
   }
   lines.join("\n")
 }
