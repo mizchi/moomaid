@@ -252,9 +252,16 @@ fn render_html_demo() -> Unit {
 ///|
 fn main {
   let raw_args = @env.args()
-  // Skip node path and script path (process.argv[0], [1])
+  // JS: process.argv = [node, script.js, ...user_args] → skip 2
+  // Native: argv = [binary, ...user_args] → skip 1
+  let skip = if raw_args.length() >= 2 &&
+    (raw_args[1].has_suffix(".js") || raw_args[1].has_suffix(".mjs")) {
+    2
+  } else {
+    1
+  }
   let args : Array[String] = []
-  for i = 2; i < raw_args.length(); i = i + 1 {
+  for i = skip; i < raw_args.length(); i = i + 1 {
     args.push(raw_args[i])
   }
   let mut file_path : String? = None

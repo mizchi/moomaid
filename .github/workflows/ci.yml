@@ -18,7 +18,9 @@ jobs:
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
       - name: Moon update
         run: moon update
-      - name: Moon check
+      - name: Moon check (js)
         run: moon check --deny-warn --target js
+      - name: Moon check (native)
+        run: moon check --deny-warn --target native
       - name: Moon test
         run: moon test --target js

@@ -5,10 +5,16 @@ Mermaid diagram renderer written in MoonBit. Outputs ASCII art or SVG.
 ## Install
 
 ```bash
+# Native binary (Linux x64, macOS arm64)
+curl -fsSL https://raw.githubusercontent.com/mizchi/moomaid/main/install.sh | sh
+
 # npm
 npx moomaid -h
 
-# Moonbit
+# MoonBit CLI tool
+moon install mizchi/moomaid/cmd/moomaid
+
+# MoonBit library
 moon add mizchi/moomaid
 ```
 
@@ -16,24 +22,17 @@ moon add mizchi/moomaid
 
 ```bash
 # Render from file
-just cli diagram.mmd
-just cli --svg diagram.mmd
+moomaid diagram.mmd
+moomaid --svg diagram.mmd
 
 # Render from stdin
-echo 'graph LR
-  A --> B --> C' | just cli-stdin
+echo 'graph LR; A --> B' | moomaid -
 
-# Sequence diagram from stdin
-cat <<EOF | just cli-stdin
-sequenceDiagram
-  participant Client
-  participant API
-  participant DB
-  Client->>API: Request
-  API->>DB: Query
-  DB-->>API: Result
-  API-->>Client: Response
-EOF
+# HTML output
+moomaid --html diagram.mmd
+
+# HTML demo page (all diagram types)
+moomaid --html
 ```
 
 ### Options
@@ -41,7 +40,11 @@ EOF
 ```
 --svg          Output SVG (default: ASCII)
 --ascii        Output ASCII art
+--kitty        Output Kitty graphics protocol
+--html         Output HTML with embedded SVG
 --width <n>    Max width for ASCII (default: 80)
+               For kitty: image width in px (default: 640)
+-              Read from stdin
 --help         Show help
 ```
 

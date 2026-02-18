@@ -1,34 +1,57 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/usr/bin/env sh
+set -e
 
-PREFIX="${PREFIX:-$HOME/.local}"
+REPO="mizchi/moomaid"
+BIN_NAME="moomaid"
+INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
+VERSION="${VERSION:-${1:-}}"
 
-# Check dependencies
-for cmd in moon node; do
-  if ! command -v "$cmd" &>/dev/null; then
-    echo "Error: $cmd is required but not found" >&2
+# Get latest version from GitHub API if not specified
+if [ -z "$VERSION" ]; then
+  VERSION=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" | \
+    awk -F '"' '/"tag_name"/ {print $4; exit}')
+fi
+
+# Platform detection
+OS=$(uname -s)
+ARCH=$(uname -m)
+
+case "$OS" in
+  Darwin) OS="macos" ;;
+  Linux)  OS="linux" ;;
+  *)
+    echo "unsupported OS: $OS" >&2
     exit 1
-  fi
-done
+    ;;
+esac
 
-echo "Building moomaid..."
-moon build src/cmd/moomaid --target js --release
+case "$ARCH" in
+  arm64|aarch64) ARCH="arm64" ;;
+  x86_64|amd64)  ARCH="x64" ;;
+  *)
+    echo "unsupported arch: $ARCH" >&2
+    exit 1
+    ;;
+esac
 
-echo "Installing to $PREFIX ..."
-mkdir -p "$PREFIX/lib/moomaid" "$PREFIX/bin"
+ASSET="${BIN_NAME}-${OS}-${ARCH}.tar.gz"
+URL="https://github.com/${REPO}/releases/download/${VERSION}/${ASSET}"
 
-cp _build/js/release/build/cmd/moomaid/moomaid.js "$PREFIX/lib/moomaid/moomaid.js"
+echo "Downloading ${BIN_NAME} ${VERSION} (${OS}-${ARCH})..."
 
-cat > "$PREFIX/bin/moomaid" <<'WRAPPER'
-#!/usr/bin/env node
-import { createRequire } from "node:module";
-globalThis.require = createRequire(import.meta.url);
-WRAPPER
+TMPDIR=$(mktemp -d)
+cleanup() { rm -rf "$TMPDIR"; }
+trap cleanup EXIT
 
-# Append the import with the resolved path
-echo "await import(\"$PREFIX/lib/moomaid/moomaid.js\");" >> "$PREFIX/bin/moomaid"
+curl -fsSL "$URL" -o "$TMPDIR/$ASSET"
+tar -C "$TMPDIR" -xzf "$TMPDIR/$ASSET"
 
-chmod +x "$PREFIX/bin/moomaid"
+mkdir -p "$INSTALL_DIR"
+if command -v install >/dev/null 2>&1; then
+  install -m 755 "$TMPDIR/$BIN_NAME" "$INSTALL_DIR/$BIN_NAME"
+else
+  cp "$TMPDIR/$BIN_NAME" "$INSTALL_DIR/$BIN_NAME"
+  chmod +x "$INSTALL_DIR/$BIN_NAME"
+fi
 
-echo "Installed moomaid to $PREFIX/bin/moomaid"
-echo "Make sure $PREFIX/bin is in your PATH"
+echo "${BIN_NAME} installed to ${INSTALL_DIR}/${BIN_NAME}"
