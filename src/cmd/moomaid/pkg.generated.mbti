@@ -1,0 +1,14 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/moomaid/cmd/moomaid"
+
+// Values
+
+// Errors
+
+// Types and methods
+type OutputMode
+
+// Type aliases
+
+// Traits
+
