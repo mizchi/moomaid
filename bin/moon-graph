@@ -1,0 +1,481 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# moon-graph: MoonBit project dependency graph visualizer
+# Uses moon ide outline + find-references to build dependency graphs
+# Renders via moomaid CLI
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_DIR"
+
+# Defaults
+MODE="file"
+FORMAT="ascii"
+ALL=false
+SIG=false
+MERMAID_ONLY=false
+NO_CACHE=false
+
+usage() {
+  cat <<EOF
+Usage: bin/moon-graph [OPTIONS]
+
+Options:
+  --mode file|call   Graph mode (default: file)
+                     file: file-level dependency graph
+                     call: function call graph (pub only by default)
+  --format ascii|svg|kitty  Output format (default: ascii)
+  --all              Include all functions, not just pub (call mode)
+  --sig              Include type signatures in node labels (call mode)
+  --mermaid          Output raw Mermaid text only
+  --no-cache         Force regeneration (ignore cache)
+  -h, --help         Show this help
+EOF
+  exit 0
+}
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --mode) MODE="$2"; shift 2 ;;
+    --format) FORMAT="$2"; shift 2 ;;
+    --all) ALL=true; shift ;;
+    --sig) SIG=true; shift ;;
+    --mermaid) MERMAID_ONLY=true; shift ;;
+    --no-cache) NO_CACHE=true; shift ;;
+    -h|--help) usage ;;
+    *) echo "Unknown option: $1" >&2; exit 1 ;;
+  esac
+done
+
+# Validate
+if [[ "$MODE" != "file" && "$MODE" != "call" ]]; then
+  echo "Error: --mode must be 'file' or 'call'" >&2; exit 1
+fi
+if [[ "$FORMAT" != "ascii" && "$FORMAT" != "svg" && "$FORMAT" != "kitty" ]]; then
+  echo "Error: --format must be 'ascii', 'svg', or 'kitty'" >&2; exit 1
+fi
+
+# ============================================================
+# Cache
+# ============================================================
+CACHE_DIR="$PROJECT_DIR/.moon-graph-cache"
+mkdir -p "$CACHE_DIR"
+
+# Compute hash of all source .mbt files (excluding tests)
+source_hash() {
+  local files=()
+  for f in src/*.mbt; do
+    case "$(basename "$f")" in
+      *_test.mbt|*_wbtest.mbt) continue ;;
+    esac
+    files+=("$f")
+  done
+  cat "${files[@]}" | shasum -a 256 | cut -d' ' -f1
+}
+
+SRC_HASH=$(source_hash)
+CACHE_KEY="${SRC_HASH}_${MODE}_${ALL}_${SIG}"
+CACHED_MERMAID="$CACHE_DIR/${CACHE_KEY}.mmd"
+
+if [[ "$NO_CACHE" == false && -f "$CACHED_MERMAID" ]]; then
+  echo "Using cached graph (use --no-cache to regenerate)" >&2
+  MERMAID_FILE="$CACHED_MERMAID"
+else
+  # Temp directory for working files
+  TMPDIR_WORK=$(mktemp -d /tmp/moon-graph.XXXXXX)
+  OUTLINE_TSV="$TMPDIR_WORK/outline.tsv"
+  REFS_TSV="$TMPDIR_WORK/refs.tsv"
+  MERMAID_FILE="$TMPDIR_WORK/graph.mmd"
+  cleanup_tmp() { rm -rf "$TMPDIR_WORK"; }
+  trap cleanup_tmp EXIT
+
+  # ============================================================
+  # Phase 1: Collect symbols from moon ide outline
+  # ============================================================
+  echo "Phase 1: Collecting symbols..." >&2
+
+  # Parse outline output with awk to handle multi-line signatures
+  # and extract type signatures
+  # Output: kind \t name \t lineno \t file \t basename \t is_pub \t signature
+  parse_outline() {
+    local file="$1"
+    local bname
+    bname=$(basename "$file" .mbt)
+
+    moon ide outline "$file" 2>/dev/null | awk -v file="$file" -v bname="$bname" '
+    # "..." separator line
+    /^[[:space:]]*\.\.\./ {
+      if (pending_name != "") {
+        gsub(/[[:space:]]*\{[[:space:]]*$/, "", pending_sig)
+        printf "%s\t%s\t%d\t%s\t%s\t%s\t%s\n", pending_kind, pending_name, pending_lineno, file, bname, pending_pub, pending_sig
+      }
+      pending_name = ""
+      pending_sig = ""
+      next
+    }
+    # Lines with "L<num> | <content>"
+    /^[[:space:]]*L[0-9]/ {
+      line = $0
+      gsub(/^[[:space:]]+/, "", line)
+      if (substr(line, 1, 1) != "L") next
+      i = 2
+      while (i <= length(line) && substr(line, i, 1) ~ /[0-9]/) i++
+      lineno = substr(line, 2, i - 2) + 0
+      j = index(line, "| ")
+      if (j == 0) next
+      rest = substr(line, j + 2)
+      gsub(/^[[:space:]]+/, "", rest)
+
+      # Continuation of multi-line signature
+      if (pending_name != "" && lineno > pending_lineno) {
+        pending_sig = pending_sig " " rest
+        next
+      }
+
+      # New symbol definition
+      is_pub = "false"
+      if (rest ~ /^pub /) {
+        is_pub = "true"
+        sub(/^pub /, "", rest)
+        if (rest ~ /^\(/) {
+          sub(/^\([^)]*\)[[:space:]]*/, "", rest)
+        }
+      }
+      kind = ""; name = ""
+      if (rest ~ /^fn /) {
+        sub(/^fn /, "", rest)
+        n = split(rest, parts, /[( ]/)
+        name = parts[1]
+        if (name ~ /::/) kind = "method"
+        else kind = "fn"
+        pending_sig = rest
+      } else if (rest ~ /^struct /) {
+        kind = "struct"
+        sub(/^struct /, "", rest)
+        n = split(rest, parts, /[[:space:]{]/)
+        name = parts[1]
+        pending_sig = ""
+      } else if (rest ~ /^enum /) {
+        kind = "enum"
+        sub(/^enum /, "", rest)
+        n = split(rest, parts, /[[:space:]{]/)
+        name = parts[1]
+        pending_sig = ""
+      } else if (rest ~ /^let /) {
+        kind = "let"
+        sub(/^let /, "", rest)
+        n = split(rest, parts, /[[:space:]:]/)
+        name = parts[1]
+        pending_sig = ""
+      }
+      if (name != "") {
+        pending_kind = kind
+        pending_name = name
+        pending_lineno = lineno
+        pending_pub = is_pub
+      }
+    }
+    END {
+      if (pending_name != "") {
+        gsub(/[[:space:]]*\{[[:space:]]*$/, "", pending_sig)
+        printf "%s\t%s\t%d\t%s\t%s\t%s\t%s\n", pending_kind, pending_name, pending_lineno, file, bname, pending_pub, pending_sig
+      }
+    }
+    '
+  }
+
+  for f in src/*.mbt; do
+    case "$(basename "$f")" in
+      *_test.mbt|*_wbtest.mbt) continue ;;
+    esac
+    parse_outline "$f"
+  done > "$OUTLINE_TSV"
+
+  symbol_count=$(wc -l < "$OUTLINE_TSV" | tr -d ' ')
+  echo "  Found $symbol_count symbols" >&2
+
+  # ============================================================
+  # Phase 2: Find references for each symbol
+  # ============================================================
+  echo "Phase 2: Finding references..." >&2
+
+  SYMBOLS_FILE="$TMPDIR_WORK/symbols.tsv"
+  awk -F'\t' '$1 == "fn"' "$OUTLINE_TSV" > "$SYMBOLS_FILE"
+
+  filtered_count=$(wc -l < "$SYMBOLS_FILE" | tr -d ' ')
+  echo "  Processing $filtered_count symbols..." >&2
+
+  HELPER="$TMPDIR_WORK/find-refs.sh"
+  cat > "$HELPER" <<'HELPEREOF'
+#!/usr/bin/env bash
+set -euo pipefail
+PROJECT_DIR="$1"
+kind="$2"; symname="$3"; lineno="$4"; file="$5"; bname="$6"; is_pub="$7"
+
+output=$(moon ide find-references "$symname" --loc "$file:$lineno" --no-check 2>/dev/null) || exit 0
+
+echo "$output" | grep -E '^/' | while IFS= read -r refline; do
+  ref_file=$(echo "$refline" | sed 's/:\([0-9]*\):.*//')
+  ref_lineno=$(echo "$refline" | sed 's/^[^:]*:\([0-9]*\):.*/\1/')
+
+  if [[ "$ref_file" == "$PROJECT_DIR/$file" && "$ref_lineno" == "$lineno" ]]; then
+    continue
+  fi
+
+  case "$ref_file" in
+    *.mbt.md) continue ;;
+  esac
+  ref_bname=$(basename "$ref_file" .mbt)
+  case "$ref_bname" in
+    *_test|*_wbtest) continue ;;
+  esac
+
+  [[ "$ref_file" != "$PROJECT_DIR/src/"* ]] && continue
+  rel_ref_file="${ref_file#$PROJECT_DIR/}"
+  case "$rel_ref_file" in
+    src/*/*.mbt) continue ;;
+  esac
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+    "$symname" "$file" "$bname" "$rel_ref_file" "$ref_bname" "$ref_lineno" "$kind" "$is_pub"
+done
+HELPEREOF
+  chmod +x "$HELPER"
+
+  REFS_DIR="$TMPDIR_WORK/refs"
+  mkdir -p "$REFS_DIR"
+
+  job_count=0
+  job_idx=0
+  while IFS=$'\t' read -r kind symname lineno file bname is_pub sig; do
+    outfile="$REFS_DIR/$job_idx.tsv"
+    bash "$HELPER" "$PROJECT_DIR" "$kind" "$symname" "$lineno" "$file" "$bname" "$is_pub" > "$outfile" 2>/dev/null &
+    job_idx=$((job_idx + 1))
+    job_count=$((job_count + 1))
+    if [[ $job_count -ge 8 ]]; then
+      wait -n 2>/dev/null || true
+      job_count=$((job_count - 1))
+    fi
+  done < "$SYMBOLS_FILE"
+  wait
+
+  cat "$REFS_DIR"/*.tsv 2>/dev/null > "$REFS_TSV" || true
+
+  ref_count=$(wc -l < "$REFS_TSV" | tr -d ' ')
+  echo "  Found $ref_count references" >&2
+
+  # ============================================================
+  # Phase 3: Build Mermaid graph
+  # ============================================================
+  echo "Phase 3: Generating Mermaid graph..." >&2
+
+  if [[ "$MODE" == "file" ]]; then
+    {
+      echo "graph LR"
+      awk -F'\t' '{
+        def_base = $3
+        ref_base = $5
+        if (def_base != ref_base) {
+          edge = ref_base " --> " def_base
+          if (!seen[edge]++) print "  " edge
+        }
+      }' "$REFS_TSV"
+    } > "$MERMAID_FILE"
+
+  elif [[ "$MODE" == "call" ]]; then
+    # Build signature lookup: name -> compact signature
+    SIG_LOOKUP="$TMPDIR_WORK/sig_lookup.tsv"
+    awk -F'\t' '$1 == "fn" && $7 != "" {
+      sig = $7
+      name = $2
+      # Remove function name prefix: "parse(..." => "(..."
+      sub(/^[^(]*/, "", sig)
+      # Remove default values including function calls: "= default_ascii_options()"
+      gsub(/= [a-zA-Z_][a-zA-Z_0-9]*\([^)]*\)/, "", sig)
+      gsub(/= [^,)]+/, "", sig)
+      # Remove parameter names, keep only types: "text : String" => "String"
+      gsub(/[a-z_]+[?]? : /, "", sig)
+      # Clean up whitespace and trailing commas
+      gsub(/[[:space:]]+/, " ", sig)
+      gsub(/ ,/, ",", sig)
+      gsub(/,[ ]*\)/, ")", sig)
+      gsub(/\( /, "(", sig)
+      gsub(/ \)/, ")", sig)
+      # Replace -> with unicode arrow to avoid mermaid edge parsing
+      gsub(/->/, "→", sig)
+      printf "%s\t%s\n", name, sig
+    }' "$OUTLINE_TSV" > "$SIG_LOOKUP"
+
+    {
+      # Collect all edges with caller file + pub info + signatures
+      # Format: caller_id \t caller_label \t callee_id \t callee_label \t caller_file \t caller_is_pub
+      while IFS=$'\t' read -r def_name def_file def_bname ref_file ref_bname ref_line kind is_pub; do
+        # Find the caller function and its pub status
+        caller_info=$(awk -F'\t' -v rfile="$ref_file" -v rline="$ref_line" '
+          ($1 == "fn" || $1 == "method") && $4 == rfile {
+            if ($3 + 0 <= rline + 0) {
+              candidate = $2
+              candidate_pub = $6
+            }
+          }
+          END { if (candidate != "") printf "%s\t%s", candidate, candidate_pub }
+        ' "$OUTLINE_TSV")
+
+        [[ -z "$caller_info" ]] && continue
+        caller="${caller_info%%	*}"
+        caller_pub="${caller_info##*	}"
+        [[ "$caller" == "$def_name" ]] && continue
+
+        caller_id="${caller//::/__}"
+        callee_id="${def_name//::/__}"
+
+        caller_label="$caller"
+        callee_label="$def_name"
+        if [[ "$SIG" == true ]]; then
+          caller_sig=$(awk -F'\t' -v n="$caller" '$1 == n { print $2; exit }' "$SIG_LOOKUP")
+          callee_sig=$(awk -F'\t' -v n="$def_name" '$1 == n { print $2; exit }' "$SIG_LOOKUP")
+          [[ -n "$caller_sig" ]] && caller_label="${caller}${caller_sig}"
+          [[ -n "$callee_sig" ]] && callee_label="${def_name}${callee_sig}"
+        fi
+
+        printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$caller_id" "$caller_label" "$callee_id" "$callee_label" "$ref_bname" "$caller_pub"
+      done < "$REFS_TSV" | sort -u
+    } > "$TMPDIR_WORK/edges.tsv"
+
+    # Filter: default (pub only) keeps edges where caller is pub.
+    # --all keeps all edges.
+    FILTERED_EDGES="$TMPDIR_WORK/filtered_edges.tsv"
+    if [[ "$ALL" == true ]]; then
+      cp "$TMPDIR_WORK/edges.tsv" "$FILTERED_EDGES"
+    else
+      awk -F'\t' '$6 == "true"' "$TMPDIR_WORK/edges.tsv" > "$FILTERED_EDGES"
+    fi
+
+    # Group edges by caller's source file, one graph LR per file
+    awk -F'\t' '
+    function node_str(id, label) {
+      if (id == label) return id
+      return sprintf("%s[\"%s\"]", id, label)
+    }
+    {
+      caller_file = $5
+      caller_id = $1; caller_label = $2; callee_id = $3; callee_label = $4
+      edge = sprintf("  %s --> %s", node_str(caller_id, caller_label), node_str(callee_id, callee_label))
+      if (!seen[edge]++) {
+        files[caller_file] = 1
+        edges[caller_file] = edges[caller_file] edge "\n"
+      }
+    }
+    END {
+      n = 0
+      for (f in files) sorted[n++] = f
+      for (i = 0; i < n - 1; i++)
+        for (j = i + 1; j < n; j++)
+          if (sorted[j] < sorted[i]) { tmp = sorted[i]; sorted[i] = sorted[j]; sorted[j] = tmp }
+
+      for (i = 0; i < n; i++) {
+        f = sorted[i]
+        if (i > 0) printf "\n"
+        printf "graph LR\n"
+        printf "%s", edges[f]
+      }
+    }
+    ' "$FILTERED_EDGES" > "$MERMAID_FILE"
+
+    # Save file group names for rendering headers
+    awk -F'\t' '
+    {
+      caller_file = $5
+      if (!seen[caller_file]++) {
+        order[n++] = caller_file
+      }
+    }
+    END {
+      for (i = 0; i < n; i++) print order[i]
+    }
+    ' "$FILTERED_EDGES" | sort > "$TMPDIR_WORK/file_groups.txt"
+  fi
+
+  # Save to cache
+  cp "$MERMAID_FILE" "$CACHED_MERMAID"
+  if [[ -f "$TMPDIR_WORK/file_groups.txt" ]]; then
+    cp "$TMPDIR_WORK/file_groups.txt" "${CACHED_MERMAID%.mmd}.groups"
+  fi
+  echo "  Cached." >&2
+fi
+
+# ============================================================
+# Output
+# ============================================================
+
+if [[ "$MERMAID_ONLY" == true ]]; then
+  cat "$MERMAID_FILE"
+  exit 0
+fi
+
+echo "" >&2
+
+# Ensure moomaid CLI is built
+if [[ ! -f "_build/js/release/build/cmd/moomaid/moomaid.js" ]]; then
+  echo "Building moomaid CLI..." >&2
+  moon build src/cmd/moomaid --target js --release 2>/dev/null
+fi
+
+# Render
+render_mmd() {
+  local f="$1"
+  if [[ "$FORMAT" == "svg" ]]; then
+    node bin/moomaid.js --svg "$f"
+  elif [[ "$FORMAT" == "kitty" ]]; then
+    node bin/moomaid.js --kitty "$f"
+  else
+    node bin/moomaid.js "$f"
+  fi
+}
+
+if [[ "$MODE" == "call" ]]; then
+  # Split mermaid file at "graph" boundaries and render each with file header
+  RENDER_DIR=$(mktemp -d /tmp/moon-graph-render.XXXXXX)
+  trap "rm -rf '$RENDER_DIR'" EXIT
+
+  awk -v dir="$RENDER_DIR" '
+    /^graph / {
+      if (idx > 0) close(fn)
+      fn = dir "/" sprintf("%04d", idx) ".mmd"
+      idx++
+    }
+    fn { print > fn }
+  ' "$MERMAID_FILE"
+
+  # Load file group names
+  GROUPS_FILE="${CACHED_MERMAID%.mmd}.groups"
+  mapfile -t group_names < "$GROUPS_FILE" 2>/dev/null || group_names=()
+
+  idx=0
+  for f in "$RENDER_DIR"/*.mmd; do
+    # Print file group header
+    if [[ $idx -lt ${#group_names[@]} ]]; then
+      gname="${group_names[$idx]}"
+    else
+      gname="group $idx"
+    fi
+
+    if [[ "$FORMAT" != "svg" ]]; then
+      # ANSI color per file group (cycle through colors)
+      ansi_colors=("36" "33" "35" "32" "34" "31")
+      cnum="${ansi_colors[$((idx % ${#ansi_colors[@]}))]}"
+      label="── ${gname}.mbt "
+      width=${#label}
+      trail=$(printf '%0.s─' $(seq 1 $((40 - width > 0 ? 40 - width : 4))))
+      printf '\033[%sm%s\033[0m\n' "$cnum" "${label}${trail}"
+      echo ""
+    fi
+
+    render_mmd "$f"
+    echo ""
+    idx=$((idx + 1))
+  done
+else
+  render_mmd "$MERMAID_FILE"
+fi

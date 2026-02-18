@@ -26,10 +26,6 @@ type Canvas
 pub impl Eq for Canvas
 pub impl Show for Canvas
 
-type Cell
-pub impl Eq for Cell
-pub impl Show for Cell
-
 type Defaults
 pub impl Eq for Defaults
 pub impl Show for Defaults

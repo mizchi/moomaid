@@ -1,11 +1,9 @@
 import {
   "mizchi/moomaid",
+  "mizchi/moomaid/kitty",
   "mizchi/tui" @mtui,
   "mizchi/tui/vnode",
-  "mizchi/tui/image",
-  "mizchi/crater/svg",
   "mizchi/signals",
-  "moonbitlang/core/buffer",
   "moonbitlang/async",
 }
 

@@ -1,5 +1,8 @@
 import {
-  "mizchi/moomaid",
+  "mizchi/moomaid" @mermaid,
+  "mizchi/moomaid/kitty",
+  "mizchi/font",
+  "mizchi/svg",
   "moonbitlang/x/fs",
   "moonbitlang/core/env",
   "moonbitlang/core/strconv",

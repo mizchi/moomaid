@@ -37,37 +37,39 @@ fn split_ws(line : String) -> Array[String] {
 
 ///|
 fn split_once(text : String, sep : String) -> (String, String)? {
-  let parts : Array[String] = []
-  for part in text.split(sep) {
-    parts.push(part.to_string())
-  }
-  if parts.length() < 2 {
-    return None
-  }
-  let first = parts[0]
-  if parts.length() == 2 {
-    return Some((first, parts[1]))
-  }
+  let mut first = true
+  let mut left : String = ""
   let sb = StringBuilder::new()
-  for i in 1..<parts.length() {
-    if i > 1 {
-      sb.write_view(sep)
+  let mut found = false
+  for part in text.split(sep) {
+    if first {
+      left = part.to_string()
+      first = false
+    } else if not(found) {
+      sb.write_string(part.to_string())
+      found = true
+    } else {
+      sb.write_string(sep)
+      sb.write_string(part.to_string())
     }
-    sb.write_view(parts[i])
   }
-  Some((first, sb.to_string()))
+  if found {
+    Some((left, sb.to_string()))
+  } else {
+    None
+  }
 }
 
 ///|
 fn drop_first_char(text : String) -> String {
+  if text.length() <= 1 {
+    return ""
+  }
+  let iter = text.iter()
+  let _ = iter.next()
   let sb = StringBuilder::new()
-  let mut first = true
-  for c in text {
-    if first {
-      first = false
-    } else {
-      sb.write_char(c)
-    }
+  for c in iter {
+    sb.write_char(c)
   }
   sb.to_string()
 }

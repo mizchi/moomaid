@@ -34,7 +34,7 @@ fn parse_node_token(token : String, default_shape : NodeShape) -> GraphNode {
       match split_once(rest, "]") {
         Some((label_raw, _)) => {
           let id = trim_line(id_raw)
-          let label = trim_line(label_raw)
+          let label = strip_quotes(trim_line(label_raw))
           let sections = [[label]]
           { id, label, shape: NodeShape::Rect, sections }
         }

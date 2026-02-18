@@ -15,14 +15,14 @@
     "moomaid": "./bin/moomaid.js"
   },
   "scripts": {
-    "build": "moon build --target js",
-    "prepublishOnly": "moon build --target js"
+    "build": "moon build --target js --release",
+    "prepublishOnly": "moon build --target js --release"
   },
   "files": [
     "_build/js/release/build/moomaid.js",
     "_build/js/release/build/moomaid.d.ts",
     "_build/js/release/build/moonbit.d.ts",
-    "_build/js/release/build/cli/cli.js",
+    "_build/js/release/build/cmd/moomaid/moomaid.js",
     "bin/moomaid.js"
   ],
   "keywords": ["mermaid", "diagram", "ascii", "svg", "flowchart", "sequence", "moonbit"],

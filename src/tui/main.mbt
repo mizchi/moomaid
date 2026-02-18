@@ -108,7 +108,9 @@ fn build_diagrams(width : Int) -> Array[DiagramEntry] {
     let lines = split_lines(rendered)
     let svg_str = @moomaid.experimental_render_to_svg(item.1)
     let svg_commands = match
-      render_svg_to_kitty_commands(svg_str, px_width, px_height, image_id) {
+      @kitty.render_svg_to_kitty_commands(
+        svg_str, px_width, px_height, image_id,
+      ) {
       Some(cmds) => cmds
       None => []
     }
@@ -235,7 +237,7 @@ async fn main {
             active_tab.set(next)
             scroll_offset.set(0)
             if svg_mode.get() {
-              @mtui.print_raw(kitty_delete_all_visible())
+              @mtui.print_raw(@kitty.kitty_delete_all_visible())
             }
           }
           @mtui.KeyEvent::Special(@mtui.SpecialKey::BackTab, _) => {
@@ -244,7 +246,7 @@ async fn main {
             active_tab.set(prev)
             scroll_offset.set(0)
             if svg_mode.get() {
-              @mtui.print_raw(kitty_delete_all_visible())
+              @mtui.print_raw(@kitty.kitty_delete_all_visible())
             }
           }
           @mtui.KeyEvent::Special(@mtui.SpecialKey::Up, _) => {
@@ -261,7 +263,7 @@ async fn main {
             let entering_ascii = svg_mode.get()
             svg_mode.set(not(entering_ascii))
             // Clear screen and kitty images when switching modes
-            @mtui.print_raw(kitty_delete_all_visible() + esc + "2J")
+            @mtui.print_raw(@kitty.kitty_delete_all_visible() + esc + "2J")
           }
           _ => need_render = false
         }

@@ -7,7 +7,9 @@
     "mizchi/crater": "0.4.4",
     "mizchi/tui": "0.6.0",
     "mizchi/signals": "0.6.3",
-    "moonbitlang/x": "0.4.40"
+    "moonbitlang/x": "0.4.40",
+    "mizchi/svg": "0.1.9",
+    "mizchi/font": "0.3.1"
   },
   "readme": "README.mbt.md",
   "repository": "https://github.com/mizchi/moomaid",

@@ -1,34 +1,20 @@
 ///|
-struct Cell {
-  mut ch : Char
-} derive(Show, Eq)
-
-///|
 struct Canvas {
   width : Int
   height : Int
-  cells : Array[Array[Cell]]
+  cells : FixedArray[Char]
 } derive(Show, Eq)
 
 ///|
 fn Canvas::new(width : Int, height : Int) -> Canvas {
-  let rows : Array[Array[Cell]] = []
-  for _ in 0..<height {
-    let row : Array[Cell] = []
-    for _ in 0..<width {
-      row.push({ ch: ' ' })
-    }
-    rows.push(row)
-  }
-  { width, height, cells: rows }
+  { width, height, cells: FixedArray::make(width * height, ' ') }
 }
 
 ///|
 fn Canvas::set(self : Canvas, x : Int, y : Int, ch : Char) -> Unit {
-  if x < 0 || y < 0 || x >= self.width || y >= self.height {
-    return
+  if x >= 0 && y >= 0 && x < self.width && y < self.height {
+    self.cells[y * self.width + x] = ch
   }
-  self.cells[y][x].ch = ch
 }
 
 ///|
@@ -61,38 +47,27 @@ fn line_directions(ch : Char) -> Int {
   }
 }
 
+// Lookup table: index = direction bitmask (0-15)
+// Bits: up=1, down=2, left=4, right=8
+
+///|
+let line_lut_unicode : FixedArray[Char] = [
+  ' ', '│', '│', '│', '─', '┘', '┐', '┤', '─', '└', '┌', '├',
+  '─', '┴', '┬', '┼',
+]
+
+///|
+let line_lut_ascii : FixedArray[Char] = [
+  ' ', '|', '|', '|', '-', '+', '+', '+', '-', '+', '+', '+', '-', '+', '+', '+',
+]
+
 ///|
 fn resolve_line_char(dirs : Int, use_ascii : Bool) -> Char {
+  let idx = dirs & 0xF
   if use_ascii {
-    if dirs == (dir_left | dir_right) {
-      '-'
-    } else if dirs == (dir_up | dir_down) {
-      '|'
-    } else {
-      '+'
-    }
-  } else if dirs == (dir_left | dir_right) {
-    '─'
-  } else if dirs == (dir_up | dir_down) {
-    '│'
-  } else if dirs == (dir_right | dir_down) {
-    '┌'
-  } else if dirs == (dir_left | dir_down) {
-    '┐'
-  } else if dirs == (dir_right | dir_up) {
-    '└'
-  } else if dirs == (dir_left | dir_up) {
-    '┘'
-  } else if dirs == (dir_up | dir_down | dir_right) {
-    '├'
-  } else if dirs == (dir_up | dir_down | dir_left) {
-    '┤'
-  } else if dirs == (dir_left | dir_right | dir_down) {
-    '┬'
-  } else if dirs == (dir_left | dir_right | dir_up) {
-    '┴'
+    line_lut_ascii[idx]
   } else {
-    '┼'
+    line_lut_unicode[idx]
   }
 }
 
@@ -107,13 +82,14 @@ fn Canvas::set_line(
   if x < 0 || y < 0 || x >= self.width || y >= self.height {
     return
   }
-  let old = self.cells[y][x].ch
+  let idx = y * self.width + x
+  let old = self.cells[idx]
   let old_dirs = line_directions(old)
   let new_dirs = line_directions(ch)
   if old_dirs != 0 && new_dirs != 0 {
-    self.cells[y][x].ch = resolve_line_char(old_dirs | new_dirs, use_ascii)
+    self.cells[idx] = resolve_line_char(old_dirs | new_dirs, use_ascii)
   } else {
-    self.cells[y][x].ch = ch
+    self.cells[idx] = ch
   }
 }
 
@@ -340,19 +316,41 @@ fn Canvas::draw_state_marker(
 
 ///|
 fn Canvas::render(self : Canvas) -> String {
-  let lines : Array[String] = []
-  for row in self.cells {
-    let sb = StringBuilder::new()
-    for cell in row {
-      sb.write_char(cell.ch)
+  // Find last row with non-space content
+  let mut last_row = self.height - 1
+  while last_row >= 0 {
+    let row_start = last_row * self.width
+    let mut has_content = false
+    for x in 0..<self.width {
+      if self.cells[row_start + x] != ' ' {
+        has_content = true
+        break
+      }
     }
-    lines.push(sb.to_string().trim_end().to_string())
+    if has_content {
+      break
+    }
+    last_row -= 1
   }
-  // Remove trailing blank lines
-  while lines.length() > 0 && lines[lines.length() - 1] == "" {
-    let _ = lines.pop()
+  let sb = StringBuilder::new()
+  for y in 0..<=last_row {
+    if y > 0 {
+      sb.write_char('\n')
+    }
+    let row_start = y * self.width
+    // Find last non-space in this row
+    let mut last_col = -1
+    for x = self.width - 1; x >= 0; x = x - 1 {
+      if self.cells[row_start + x] != ' ' {
+        last_col = x
+        break
+      }
+    }
+    for x in 0..<=last_col {
+      sb.write_char(self.cells[row_start + x])
+    }
   }
-  lines.join("\n")
+  sb.to_string()
 }
 
 ///|

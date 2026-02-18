@@ -22,26 +22,27 @@ test:
 test-update:
     moon test --update --target {{target}}
 
-# Run main (HTML preview)
+# Run HTML preview
 run:
-    moon run src/main --target {{target}}
+    moon build src/cmd/moomaid --target js --release
+    node bin/moomaid.js --html
 
 # Build JS bundle
 build:
-    moon build --target js
+    moon build --target js --release
 
-# Run CLI (ASCII/SVG renderer)
+# Run CLI (ASCII/SVG/HTML renderer)
 cli *args:
-    moon build src/cli --target js
-    node _build/js/release/build/cli/cli.js {{args}}
+    moon build src/cmd/moomaid --target js --release
+    node bin/moomaid.js {{args}}
 
 # Run CLI from stdin (pipe-friendly, via temp file)
 cli-stdin *args:
     #!/usr/bin/env bash
-    moon build src/cli --target js
+    moon build src/cmd/moomaid --target js --release
     tmp=$(mktemp /tmp/moomaid-XXXXXX.mmd)
     cat > "$tmp"
-    node _build/js/release/build/cli/cli.js {{args}} "$tmp"
+    node bin/moomaid.js {{args}} "$tmp"
     rm -f "$tmp"
 
 # Run TUI viewer
@@ -55,6 +56,10 @@ info:
 # Clean build artifacts
 clean:
     moon clean
+
+# Project dependency graph
+graph *args:
+    ./bin/moon-graph {{args}}
 
 # Pre-release check
 release-check: fmt info check test

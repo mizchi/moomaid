@@ -1,8 +1,0 @@
-import {
-  "mizchi/moomaid" @mermaid,
-  "moonbitlang/async",
-}
-
-options(
-  "is-main": true,
-)
