@@ -1,6 +1,6 @@
 {
   "name": "moomaid",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Mermaid diagram renderer for MoonBit (ASCII and SVG output)",
   "type": "module",
   "main": "./_build/js/release/build/moomaid.js",

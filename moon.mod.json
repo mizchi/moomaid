@@ -1,6 +1,6 @@
 {
   "name": "mizchi/moomaid",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "deps": {
     "moonbitlang/async": "0.16.6",
     "mizchi/syntree": "0.2.3",
