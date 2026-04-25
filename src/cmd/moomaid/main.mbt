@@ -290,7 +290,7 @@ fn main {
       }
     } else if arg == "-" {
       file_path = Some("/dev/stdin")
-    } else if not(arg.has_prefix("--")) {
+    } else if !(arg.has_prefix("--")) {
       file_path = Some(arg)
     }
     i = i + 1
@@ -330,7 +330,7 @@ fn main {
   }
   // Default width for kitty mode is 640px
   match mode {
-    Kitty => if not(width_specified) { width = 640 }
+    Kitty => if !(width_specified) { width = 640 }
     _ => ()
   }
   render(text, mode, width)

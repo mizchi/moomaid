@@ -81,7 +81,7 @@ fn compute_levels(
     let mut best_id = ""
     let mut best_level = -1
     for node in nodes {
-      if not(processed.get_or_default(node.id, false)) {
+      if !(processed.get_or_default(node.id, false)) {
         has_remaining = true
         let lvl = levels.get_or_default(node.id, 0)
         if best_level < 0 || lvl > best_level {
@@ -98,7 +98,7 @@ fn compute_levels(
         processed.set(id, true)
         let base = levels.get_or_default(id, 0)
         for to in adj.get_or_default(id, []) {
-          if not(processed.get_or_default(to, false)) {
+          if !(processed.get_or_default(to, false)) {
             let next = base + 1
             let cur = levels.get_or_default(to, 0)
             if next > cur {
@@ -107,7 +107,7 @@ fn compute_levels(
           }
           let deg = indeg.get_or_default(to, 0) - 1
           indeg.set(to, deg)
-          if deg == 0 && not(processed.get_or_default(to, false)) {
+          if deg == 0 && !(processed.get_or_default(to, false)) {
             queue.push(to)
           }
         }
@@ -115,7 +115,7 @@ fn compute_levels(
     }
   }
   for node in nodes {
-    if not(levels.contains(node.id)) {
+    if !(levels.contains(node.id)) {
       levels.set(node.id, 0)
     }
   }

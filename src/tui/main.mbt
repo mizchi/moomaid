@@ -261,7 +261,7 @@ async fn main {
           }
           @mtui.KeyEvent::Char('s', @mtui.KeyModifier::None) => {
             let entering_ascii = svg_mode.get()
-            svg_mode.set(not(entering_ascii))
+            svg_mode.set(!(entering_ascii))
             // Clear screen and kitty images when switching modes
             @mtui.print_raw(@kitty.kitty_delete_all_visible() + esc + "2J")
           }

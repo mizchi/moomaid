@@ -45,7 +45,7 @@ fn split_once(text : String, sep : String) -> (String, String)? {
     if first {
       left = part.to_string()
       first = false
-    } else if not(found) {
+    } else if !(found) {
       sb.write_string(part.to_string())
       found = true
     } else {
