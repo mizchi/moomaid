@@ -1,3 +1,5 @@
+supported_targets = "js"
+
 import {
   "mizchi/moomaid",
   "mizchi/moomaid/kitty",
@@ -7,6 +9,4 @@ import {
   "moonbitlang/async",
 }
 
-options(
-  "is-main": true,
-)
+pkgtype(kind: "executable")

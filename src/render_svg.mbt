@@ -62,7 +62,7 @@ fn svg_open(
   sb.write_view(
     "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"\{width_px}\" height=\"\{height_px}\" viewBox=\"0 0 \{width_px} \{height_px}\">\n",
   )
-  if !(transparent) {
+  if !transparent {
     sb.write_view(
       "<rect x=\"0\" y=\"0\" width=\"\{width_px}\" height=\"\{height_px}\" fill=\"\{bg}\" />\n",
     )

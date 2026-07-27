@@ -35,8 +35,8 @@ fn compute_levels(
   nodes : Array[GraphNode],
   edges : Array[GraphEdge],
 ) -> Map[String, Int] {
-  let indeg : Map[String, Int] = Map::new()
-  let adj : Map[String, Array[String]] = Map::new()
+  let indeg : Map[String, Int] = Map([])
+  let adj : Map[String, Array[String]] = Map([])
   for node in nodes {
     indeg.set(node.id, 0)
   }
@@ -47,9 +47,9 @@ fn compute_levels(
     list.push(edge.to)
     adj.set(edge.from, list)
   }
-  let levels : Map[String, Int] = Map::new()
+  let levels : Map[String, Int] = Map([])
   let queue : Array[String] = []
-  let processed : Map[String, Bool] = Map::new()
+  let processed : Map[String, Bool] = Map([])
   for id, deg in indeg {
     if deg == 0 {
       queue.push(id)
@@ -81,7 +81,7 @@ fn compute_levels(
     let mut best_id = ""
     let mut best_level = -1
     for node in nodes {
-      if !(processed.get_or_default(node.id, false)) {
+      if !processed.get_or_default(node.id, false) {
         has_remaining = true
         let lvl = levels.get_or_default(node.id, 0)
         if best_level < 0 || lvl > best_level {
@@ -98,7 +98,7 @@ fn compute_levels(
         processed.set(id, true)
         let base = levels.get_or_default(id, 0)
         for to in adj.get_or_default(id, []) {
-          if !(processed.get_or_default(to, false)) {
+          if !processed.get_or_default(to, false) {
             let next = base + 1
             let cur = levels.get_or_default(to, 0)
             if next > cur {
@@ -107,7 +107,7 @@ fn compute_levels(
           }
           let deg = indeg.get_or_default(to, 0) - 1
           indeg.set(to, deg)
-          if deg == 0 && !(processed.get_or_default(to, false)) {
+          if deg == 0 && !processed.get_or_default(to, false) {
             queue.push(to)
           }
         }
@@ -115,7 +115,7 @@ fn compute_levels(
     }
   }
   for node in nodes {
-    if !(levels.contains(node.id)) {
+    if !levels.contains(node.id) {
       levels.set(node.id, 0)
     }
   }
@@ -127,7 +127,7 @@ fn group_by_level(
   nodes : Array[GraphNode],
   levels : Map[String, Int],
 ) -> Array[Array[GraphNode]] {
-  let map : Map[Int, Array[GraphNode]] = Map::new()
+  let map : Map[Int, Array[GraphNode]] = Map([])
   for node in nodes {
     let level = levels.get_or_default(node.id, 0)
     let list = map.get_or_default(level, [])
@@ -181,7 +181,7 @@ fn layout_graph(diagram : GraphDiagram, options : Options) -> PositionedGraph {
   let padding_y = options.padding_y
   let gap_main = 2.0
   let gap_cross = 4.0
-  let size_map : Map[String, (Int, Int)] = Map::new()
+  let size_map : Map[String, (Int, Int)] = Map([])
   for n in diagram.nodes {
     size_map.set(n.id, measure_node_size(n, padding_x, padding_y))
   }
@@ -241,11 +241,11 @@ fn layout_graph(diagram : GraphDiagram, options : Options) -> PositionedGraph {
     )
   }
   let root = @node.Node::new("root", root_style, level_children)
-  let crater_layout = @crater.compute_layout(
+  let crater_layout : @layout_types.Layout = @crater.compute_layout(
     root,
     @types.Size::new(available_w, 10000.0),
   )
-  let layout_map : Map[String, LayoutBox] = Map::new()
+  let layout_map : Map[String, LayoutBox] = Map([])
   for level_layout in crater_layout.children {
     for node_layout in level_layout.children {
       layout_map.set(node_layout.id, {
@@ -331,18 +331,18 @@ fn layout_sequence(
   )
   let actor_nodes : Array[@node.Node] = []
   for actor in diagram.actors {
-    let w = actor.label.length() + padding_x * 2 + 2
+    let w = display_width(actor.label) + padding_x * 2 + 2
     actor_nodes.push(
       @node.Node::leaf(actor.id, make_leaf_style(w, actor_height)),
     )
   }
   let actor_root = @node.Node::new("actors", actor_style, actor_nodes)
-  let actor_layout = @crater.compute_layout(
+  let actor_layout : @layout_types.Layout = @crater.compute_layout(
     actor_root,
     @types.Size::new(seq_available_w, 10000.0),
   )
   let actors : Array[PositionedActor] = []
-  let actor_map : Map[String, PositionedActor] = Map::new()
+  let actor_map : Map[String, PositionedActor] = Map([])
   for i, actor in diagram.actors {
     if i < actor_layout.children.length() {
       let al = actor_layout.children[i]

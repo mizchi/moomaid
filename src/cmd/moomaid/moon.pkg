@@ -1,3 +1,5 @@
+supported_targets = "js"
+
 import {
   "mizchi/moomaid" @mermaid,
   "mizchi/moomaid/kitty",
@@ -5,9 +7,7 @@ import {
   "mizchi/svg",
   "moonbitlang/x/fs",
   "moonbitlang/core/env",
-  "moonbitlang/core/strconv",
+  "moonbitlang/core/string",
 }
 
-options(
-  "is-main": true,
-)
+pkgtype(kind: "executable")

@@ -186,7 +186,7 @@ fn parse_flow_edges(
   header_index : Int,
   default_shape : NodeShape,
 ) -> (Array[GraphNode], Array[GraphEdge]) {
-  let nodes : Map[String, GraphNode] = Map::new()
+  let nodes : Map[String, GraphNode] = Map([])
   let edges : Array[GraphEdge] = []
   for i, line in lines {
     if i <= header_index {
@@ -208,7 +208,7 @@ fn parse_state(
   header_index : Int,
   direction : Direction,
 ) -> GraphDiagram {
-  let nodes : Map[String, GraphNode] = Map::new()
+  let nodes : Map[String, GraphNode] = Map([])
   let edges : Array[GraphEdge] = []
   let mut start_counter = 0
   let mut end_counter = 0
@@ -320,7 +320,7 @@ fn parse_flowchart(
 
 ///|
 fn parse_class(lines : Array[String], header_index : Int) -> GraphDiagram {
-  let nodes : Map[String, GraphNode] = Map::new()
+  let nodes : Map[String, GraphNode] = Map([])
   let edges : Array[GraphEdge] = []
   let mut current_class : String? = None
   for i, line in lines {
@@ -413,7 +413,7 @@ fn parse_class(lines : Array[String], header_index : Int) -> GraphDiagram {
 
 ///|
 fn parse_er(lines : Array[String], header_index : Int) -> GraphDiagram {
-  let nodes : Map[String, GraphNode] = Map::new()
+  let nodes : Map[String, GraphNode] = Map([])
   let edges : Array[GraphEdge] = []
   let mut current_entity : String? = None
   for i, line in lines {
@@ -504,7 +504,7 @@ fn ensure_actor(
 
 ///|
 fn parse_sequence(lines : Array[String], header_index : Int) -> SequenceDiagram {
-  let actors : Map[String, SequenceActor] = Map::new()
+  let actors : Map[String, SequenceActor] = Map([])
   let messages : Array[SequenceMessage] = []
   for i, line in lines {
     if i <= header_index {

@@ -1,9 +1,12 @@
+supported_targets = "js+wasm"
+
 import {
   "mizchi/syntree/highlight",
-  "mizchi/crater",
-  "mizchi/crater/types",
-  "mizchi/crater/style",
-  "mizchi/crater/layout/node",
+  "mizchi/crater-layout" @crater,
+  "mizchi/crater-core" @layout_types,
+  "mizchi/css/values" @types,
+  "mizchi/css/style",
+  "mizchi/crater-core/node",
 }
 
 options(

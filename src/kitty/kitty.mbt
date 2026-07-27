@@ -377,7 +377,7 @@ fn svg_string_to_image(
 
 ///|
 fn image_to_rgb_bytes(image : @svg.Image) -> Bytes {
-  let buf = @buffer.new(size_hint=image.width * image.height * 3)
+  let buf = Buffer(size_hint=image.width * image.height * 3)
   for y in 0..<image.height {
     for x in 0..<image.width {
       let c = image.get_pixel(x, y)

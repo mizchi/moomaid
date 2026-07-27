@@ -285,12 +285,12 @@ fn main {
     } else if arg == "--width" {
       i = i + 1
       if i < args.length() {
-        width = @strconv.parse_int(args[i]) catch { _ => 80 }
+        width = @string.parse_int(args[i]) catch { _ => 80 }
         width_specified = true
       }
     } else if arg == "-" {
       file_path = Some("/dev/stdin")
-    } else if !(arg.has_prefix("--")) {
+    } else if !arg.has_prefix("--") {
       file_path = Some(arg)
     }
     i = i + 1
@@ -318,7 +318,8 @@ fn main {
   }
   let text = @fs.read_file_to_string(path) catch {
     err => {
-      println("Error: " + err.to_string())
+      let @fs.IOError(message) = err
+      println("Error: " + message)
       return
     }
   }
@@ -330,7 +331,7 @@ fn main {
   }
   // Default width for kitty mode is 640px
   match mode {
-    Kitty => if !(width_specified) { width = 640 }
+    Kitty => if !width_specified { width = 640 }
     _ => ()
   }
   render(text, mode, width)

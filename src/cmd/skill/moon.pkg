@@ -1,0 +1,9 @@
+supported_targets = "js+wasm"
+
+import {
+  "mizchi/moomaid" @mermaid,
+  "moonbitlang/core/env",
+  "moonbitlang/x/fs",
+}
+
+pkgtype(kind: "executable")

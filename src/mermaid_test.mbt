@@ -5,10 +5,20 @@ test "parse flowchart" {
     #|  A[Start] --> B[End]
     #|
   let diagram = parse(text)
-  inspect(
+  debug_inspect(
     diagram,
     content=(
-      #|Graph({kind: Flowchart, direction: TD, nodes: [{id: "A", label: "Start", shape: Rect, sections: [["Start"]]}, {id: "B", label: "End", shape: Rect, sections: [["End"]]}], edges: [{from: "A", to: "B", label: None}]})
+      #|Graph(
+      #|  {
+      #|    kind: Flowchart,
+      #|    direction: TD,
+      #|    nodes: [
+      #|      { id: "A", label: "Start", shape: Rect, sections: [["Start"]] },
+      #|      { id: "B", label: "End", shape: Rect, sections: [["End"]] },
+      #|    ],
+      #|    edges: [{ from: "A", to: "B", label: None }],
+      #|  },
+      #|)
     ),
   )
 }
@@ -224,10 +234,29 @@ test "parse chained edges" {
     #|  Input --> Process --> Output
     #|
   let diagram = parse(text)
-  inspect(
+  debug_inspect(
     diagram,
     content=(
-      #|Graph({kind: Flowchart, direction: LR, nodes: [{id: "Input", label: "Input", shape: Rect, sections: [["Input"]]}, {id: "Process", label: "Process", shape: Rect, sections: [["Process"]]}, {id: "Output", label: "Output", shape: Rect, sections: [["Output"]]}], edges: [{from: "Input", to: "Process", label: None}, {from: "Process", to: "Output", label: None}]})
+      #|Graph(
+      #|  {
+      #|    kind: Flowchart,
+      #|    direction: LR,
+      #|    nodes: [
+      #|      { id: "Input", label: "Input", shape: Rect, sections: [["Input"]] },
+      #|      {
+      #|        id: "Process",
+      #|        label: "Process",
+      #|        shape: Rect,
+      #|        sections: [["Process"]],
+      #|      },
+      #|      { id: "Output", label: "Output", shape: Rect, sections: [["Output"]] },
+      #|    ],
+      #|    edges: [
+      #|      { from: "Input", to: "Process", label: None },
+      #|      { from: "Process", to: "Output", label: None },
+      #|    ],
+      #|  },
+      #|)
     ),
   )
 }

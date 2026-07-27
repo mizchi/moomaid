@@ -7,7 +7,7 @@ pub struct DiagramColors {
   muted : String
   surface : String
   border : String
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 pub struct SvgOptions {
@@ -20,7 +20,7 @@ pub struct SvgOptions {
   border : String?
   font : String?
   transparent : Bool?
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 pub(all) struct Options {
@@ -29,13 +29,13 @@ pub(all) struct Options {
   padding_y : Int
   box_border_padding : Int
   max_width : Int
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 struct Defaults {
   bg : String
   fg : String
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 let defaults : Defaults = { bg: "#FFFFFF", fg: "#27272A" }
@@ -111,7 +111,7 @@ fn from_syntree_theme(theme : @highlight.HighlightTheme) -> DiagramColors {
 
 ///|
 fn make_themes() -> Map[String, DiagramColors] {
-  let map : Map[String, DiagramColors] = Map::new()
+  let map : Map[String, DiagramColors] = Map([])
   map.set("github-dark", from_syntree_theme(@highlight.github_dark()))
   map.set("github-light", from_syntree_theme(@highlight.github_light()))
   map.set("one-dark-pro", from_syntree_theme(@highlight.one_dark_pro()))

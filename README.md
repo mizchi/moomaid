@@ -48,6 +48,25 @@ moomaid --html
 --help         Show help
 ```
 
+## Portable Skill API
+
+`cmd/skill` is the Wasm-friendly command package for `skills.mooncakes.io`.
+It accepts Mermaid source from standard input and writes exactly one rendered
+artifact on success.
+
+```bash
+# Local Wasm package
+moon runwasm src/cmd/skill --format ascii < diagram.mmd
+moon runwasm src/cmd/skill --format svg < diagram.mmd
+
+# Standalone script prototype with the same contract
+moon run examples/moomaid.mbtx --format ascii < diagram.mmd
+```
+
+The only supported flag is `--format ascii|svg`; the default is `ascii`.
+After publishing, the same command is runnable by its Mooncakes coordinate:
+`moon runwasm mizchi/moomaid/cmd/skill@<version> --format svg`.
+
 ## Diagram Types
 
 ### Flowchart (`graph LR` / `graph TD`)
@@ -113,6 +132,12 @@ let ascii2 = @moomaid.render_to_string("graph LR\n  A --> B", options~)
 
 // SVG output (experimental)
 let svg = @moomaid.experimental_render_to_svg("graph LR\n  A --> B")
+
+// Portable Skill API
+let skill_svg = @moomaid.render(
+  "graph LR\n  A --> B",
+  @moomaid.OutputFormat::Svg,
+)
 ```
 
 ## TUI Viewer

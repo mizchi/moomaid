@@ -1,10 +1,16 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "mizchi/moomaid"
 
+import {
+  "moonbitlang/core/debug",
+}
+
 // Values
 pub fn experimental_render_to_svg(String, options? : SvgOptions) -> String
 
 pub fn parse(String) -> MermaidDiagram
+
+pub fn render(String, OutputFormat) -> String
 
 pub fn render_to_string(String, options? : Options) -> String
 
@@ -18,17 +24,11 @@ pub let themes : Map[String, DiagramColors]
 pub enum ActorKind {
   Participant
   Actor
-}
-pub impl Eq for ActorKind
-pub impl Show for ActorKind
+} derive(Eq, @debug.Debug)
 
-type Canvas
-pub impl Eq for Canvas
-pub impl Show for Canvas
+type Canvas derive(Eq, @debug.Debug)
 
-type Defaults
-pub impl Eq for Defaults
-pub impl Show for Defaults
+type Defaults derive(Eq, @debug.Debug)
 
 pub struct DiagramColors {
   bg : String
@@ -38,64 +38,48 @@ pub struct DiagramColors {
   muted : String
   surface : String
   border : String
-}
-pub impl Eq for DiagramColors
-pub impl Show for DiagramColors
+} derive(Eq, @debug.Debug)
 
 pub enum DiagramKind {
   Flowchart
   State
   Class
   Er
-}
-pub impl Eq for DiagramKind
-pub impl Show for DiagramKind
+} derive(Eq, @debug.Debug)
 
 pub enum Direction {
   TD
   LR
   BT
   RL
-}
-pub impl Eq for Direction
-pub impl Show for Direction
+} derive(Eq, @debug.Debug)
 
 pub struct GraphDiagram {
   kind : DiagramKind
   direction : Direction
   nodes : Array[GraphNode]
   edges : Array[GraphEdge]
-}
-pub impl Eq for GraphDiagram
-pub impl Show for GraphDiagram
+} derive(Eq, @debug.Debug)
 
 pub struct GraphEdge {
   from : String
   to : String
   label : String?
-}
-pub impl Eq for GraphEdge
-pub impl Show for GraphEdge
+} derive(Eq, @debug.Debug)
 
 pub struct GraphNode {
   id : String
   label : String
   shape : NodeShape
   sections : Array[Array[String]]
-}
-pub impl Eq for GraphNode
-pub impl Show for GraphNode
+} derive(Eq, @debug.Debug)
 
-type LayoutBox
-pub impl Eq for LayoutBox
-pub impl Show for LayoutBox
+type LayoutBox derive(Eq, @debug.Debug)
 
 pub enum MermaidDiagram {
   Graph(GraphDiagram)
   Sequence(SequenceDiagram)
-}
-pub impl Eq for MermaidDiagram
-pub impl Show for MermaidDiagram
+} derive(Eq, @debug.Debug)
 
 pub enum NodeShape {
   Rect
@@ -103,9 +87,7 @@ pub enum NodeShape {
   Circle
   StateStart
   StateEnd
-}
-pub impl Eq for NodeShape
-pub impl Show for NodeShape
+} derive(Eq, @debug.Debug)
 
 pub(all) struct Options {
   use_ascii : Bool
@@ -113,61 +95,45 @@ pub(all) struct Options {
   padding_y : Int
   box_border_padding : Int
   max_width : Int
-}
-pub impl Eq for Options
-pub impl Show for Options
+} derive(Eq, @debug.Debug)
 
-type Point
-pub impl Eq for Point
-pub impl Show for Point
+pub(all) enum OutputFormat {
+  Ascii
+  Svg
+} derive(Eq, @debug.Debug)
+pub fn OutputFormat::parse(StringView) -> Self?
 
-type PositionedActor
-pub impl Eq for PositionedActor
-pub impl Show for PositionedActor
+type Point derive(Eq, @debug.Debug)
 
-type PositionedEdge
-pub impl Eq for PositionedEdge
-pub impl Show for PositionedEdge
+type PositionedActor derive(Eq, @debug.Debug)
 
-type PositionedGraph
-pub impl Eq for PositionedGraph
-pub impl Show for PositionedGraph
+type PositionedEdge derive(Eq, @debug.Debug)
 
-type PositionedMessage
-pub impl Eq for PositionedMessage
-pub impl Show for PositionedMessage
+type PositionedGraph derive(Eq, @debug.Debug)
 
-type PositionedNode
-pub impl Eq for PositionedNode
-pub impl Show for PositionedNode
+type PositionedMessage derive(Eq, @debug.Debug)
 
-type PositionedSequence
-pub impl Eq for PositionedSequence
-pub impl Show for PositionedSequence
+type PositionedNode derive(Eq, @debug.Debug)
+
+type PositionedSequence derive(Eq, @debug.Debug)
 
 pub struct SequenceActor {
   id : String
   label : String
   kind : ActorKind
-}
-pub impl Eq for SequenceActor
-pub impl Show for SequenceActor
+} derive(Eq, @debug.Debug)
 
 pub struct SequenceDiagram {
   actors : Array[SequenceActor]
   messages : Array[SequenceMessage]
-}
-pub impl Eq for SequenceDiagram
-pub impl Show for SequenceDiagram
+} derive(Eq, @debug.Debug)
 
 pub struct SequenceMessage {
   from : String
   to : String
   text : String
   dashed : Bool
-}
-pub impl Eq for SequenceMessage
-pub impl Show for SequenceMessage
+} derive(Eq, @debug.Debug)
 
 pub struct SvgOptions {
   bg : String?
@@ -179,9 +145,7 @@ pub struct SvgOptions {
   border : String?
   font : String?
   transparent : Bool?
-}
-pub impl Eq for SvgOptions
-pub impl Show for SvgOptions
+} derive(Eq, @debug.Debug)
 
 // Type aliases
 

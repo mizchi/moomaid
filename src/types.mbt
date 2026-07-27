@@ -4,7 +4,7 @@ pub enum DiagramKind {
   State
   Class
   Er
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 pub enum Direction {
@@ -12,7 +12,7 @@ pub enum Direction {
   LR
   BT
   RL
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 pub enum NodeShape {
@@ -21,7 +21,7 @@ pub enum NodeShape {
   Circle
   StateStart
   StateEnd
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 pub struct GraphNode {
@@ -29,14 +29,14 @@ pub struct GraphNode {
   label : String
   shape : NodeShape
   sections : Array[Array[String]]
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 pub struct GraphEdge {
   from : String
   to : String
   label : String?
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 pub struct GraphDiagram {
@@ -44,20 +44,20 @@ pub struct GraphDiagram {
   direction : Direction
   nodes : Array[GraphNode]
   edges : Array[GraphEdge]
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 pub enum ActorKind {
   Participant
   Actor
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 pub struct SequenceActor {
   id : String
   label : String
   kind : ActorKind
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 pub struct SequenceMessage {
@@ -65,25 +65,25 @@ pub struct SequenceMessage {
   to : String
   text : String
   dashed : Bool
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 pub struct SequenceDiagram {
   actors : Array[SequenceActor]
   messages : Array[SequenceMessage]
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 pub enum MermaidDiagram {
   Graph(GraphDiagram)
   Sequence(SequenceDiagram)
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 struct Point {
   x : Int
   y : Int
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 struct LayoutBox {
@@ -91,20 +91,20 @@ struct LayoutBox {
   y : Int
   width : Int
   height : Int
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 struct PositionedNode {
   node : GraphNode
   box : LayoutBox
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 struct PositionedEdge {
   edge : GraphEdge
   start : Point
   end : Point
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 struct PositionedGraph {
@@ -114,13 +114,13 @@ struct PositionedGraph {
   height : Int
   direction : Direction
   kind : DiagramKind
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 struct PositionedActor {
   actor : SequenceActor
   box : LayoutBox
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 struct PositionedMessage {
@@ -128,7 +128,7 @@ struct PositionedMessage {
   start : Point
   end : Point
   y : Int
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 struct PositionedSequence {
@@ -136,4 +136,4 @@ struct PositionedSequence {
   messages : Array[PositionedMessage]
   width : Int
   height : Int
-} derive(Show, Eq)
+} derive(Debug, Eq)

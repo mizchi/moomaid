@@ -2,18 +2,18 @@
 struct Canvas {
   width : Int
   height : Int
-  cells : FixedArray[Char]
-} derive(Show, Eq)
+  cells : FixedArray[String]
+} derive(Debug, Eq)
 
 ///|
 fn Canvas::new(width : Int, height : Int) -> Canvas {
-  { width, height, cells: FixedArray::make(width * height, ' ') }
+  { width, height, cells: FixedArray::make(width * height, " ") }
 }
 
 ///|
 fn Canvas::set(self : Canvas, x : Int, y : Int, ch : Char) -> Unit {
   if x >= 0 && y >= 0 && x < self.width && y < self.height {
-    self.cells[y * self.width + x] = ch
+    self.cells[y * self.width + x] = ch.to_string()
   }
 }
 
@@ -30,19 +30,19 @@ let dir_left : Int = 4
 let dir_right : Int = 8
 
 ///|
-fn line_directions(ch : Char) -> Int {
+fn line_directions(ch : String) -> Int {
   match ch {
-    '─' | '-' => dir_left | dir_right
-    '│' | '|' => dir_up | dir_down
-    '┌' => dir_right | dir_down
-    '┐' => dir_left | dir_down
-    '└' => dir_right | dir_up
-    '┘' => dir_left | dir_up
-    '├' => dir_up | dir_down | dir_right
-    '┤' => dir_up | dir_down | dir_left
-    '┬' => dir_left | dir_right | dir_down
-    '┴' => dir_left | dir_right | dir_up
-    '┼' | '+' => dir_up | dir_down | dir_left | dir_right
+    "─" | "-" => dir_left | dir_right
+    "│" | "|" => dir_up | dir_down
+    "┌" => dir_right | dir_down
+    "┐" => dir_left | dir_down
+    "└" => dir_right | dir_up
+    "┘" => dir_left | dir_up
+    "├" => dir_up | dir_down | dir_right
+    "┤" => dir_up | dir_down | dir_left
+    "┬" => dir_left | dir_right | dir_down
+    "┴" => dir_left | dir_right | dir_up
+    "┼" | "+" => dir_up | dir_down | dir_left | dir_right
     _ => 0
   }
 }
@@ -85,20 +85,86 @@ fn Canvas::set_line(
   let idx = y * self.width + x
   let old = self.cells[idx]
   let old_dirs = line_directions(old)
-  let new_dirs = line_directions(ch)
+  let new_dirs = line_directions(ch.to_string())
   if old_dirs != 0 && new_dirs != 0 {
-    self.cells[idx] = resolve_line_char(old_dirs | new_dirs, use_ascii)
+    self.cells[idx] = resolve_line_char(old_dirs | new_dirs, use_ascii).to_string()
   } else {
-    self.cells[idx] = ch
+    self.cells[idx] = ch.to_string()
+  }
+}
+
+///|
+/// Appends a zero-width extension to an already drawn display cell.
+fn Canvas::append_to_cell(
+  self : Canvas,
+  x : Int,
+  y : Int,
+  text : String,
+) -> Unit {
+  if x >= 0 && y >= 0 && x < self.width && y < self.height {
+    let idx = y * self.width + x
+    self.cells[idx] = self.cells[idx] + text
+  }
+}
+
+///|
+/// Reserves continuation cells after a wide terminal glyph.
+fn Canvas::set_continuations(
+  self : Canvas,
+  x : Int,
+  y : Int,
+  width : Int,
+) -> Unit {
+  for offset in 1..<width {
+    let continuation_x = x + offset
+    if continuation_x >= 0 &&
+      y >= 0 &&
+      continuation_x < self.width &&
+      y < self.height {
+      self.cells[y * self.width + continuation_x] = ""
+    }
   }
 }
 
 ///|
 fn Canvas::draw_text(self : Canvas, x : Int, y : Int, text : String) -> Unit {
   let mut cx = x
-  for c in text {
-    self.set(cx, y, c)
-    cx += 1
+  let mut last_x = 0
+  let mut has_base = false
+  let mut join_next = false
+  let mut regional_indicator_count = 0
+  for char in text {
+    let code_point = char.to_int()
+    if is_zero_width_code_point(code_point) {
+      if has_base {
+        self.append_to_cell(last_x, y, char.to_string())
+      }
+      if code_point == 0x200D {
+        join_next = true
+      }
+    } else if join_next && has_base {
+      self.append_to_cell(last_x, y, char.to_string())
+      join_next = false
+      regional_indicator_count = 0
+    } else if is_regional_indicator(code_point) &&
+      regional_indicator_count == 1 &&
+      has_base {
+      self.append_to_cell(last_x, y, char.to_string())
+      regional_indicator_count = 0
+    } else {
+      let width = char_display_width(char)
+      self.set(cx, y, char)
+      self.set_continuations(cx, y, width)
+      last_x = cx
+      has_base = true
+      cx += width
+      join_next = false
+      regional_indicator_count = if is_regional_indicator(code_point) {
+        1
+      } else {
+        0
+      }
+    }
   }
 }
 
@@ -322,7 +388,7 @@ fn Canvas::render(self : Canvas) -> String {
     let row_start = last_row * self.width
     let mut has_content = false
     for x in 0..<self.width {
-      if self.cells[row_start + x] != ' ' {
+      if self.cells[row_start + x] != " " && self.cells[row_start + x] != "" {
         has_content = true
         break
       }
@@ -341,13 +407,13 @@ fn Canvas::render(self : Canvas) -> String {
     // Find last non-space in this row
     let mut last_col = -1
     for x = self.width - 1; x >= 0; x = x - 1 {
-      if self.cells[row_start + x] != ' ' {
+      if self.cells[row_start + x] != " " && self.cells[row_start + x] != "" {
         last_col = x
         break
       }
     }
     for x in 0..<=last_col {
-      sb.write_char(self.cells[row_start + x])
+      sb.write_string(self.cells[row_start + x])
     }
   }
   sb.to_string()
