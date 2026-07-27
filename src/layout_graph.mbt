@@ -179,6 +179,7 @@ fn make_leaf_style(w : Int, h : Int) -> @style.Style {
 fn layout_graph(diagram : GraphDiagram, options : Options) -> PositionedGraph {
   let padding_x = options.padding_x
   let padding_y = options.padding_y
+  let subgraph_offset = if diagram.subgraphs.length() > 0 { 2 } else { 0 }
   let gap_main = 2.0
   let gap_cross = 4.0
   let size_map : Map[String, (Int, Int)] = Map([])
@@ -249,15 +250,15 @@ fn layout_graph(diagram : GraphDiagram, options : Options) -> PositionedGraph {
   for level_layout in crater_layout.children {
     for node_layout in level_layout.children {
       layout_map.set(node_layout.id, {
-        x: (level_layout.x + node_layout.x).to_int(),
-        y: (level_layout.y + node_layout.y).to_int(),
+        x: (level_layout.x + node_layout.x).to_int() + subgraph_offset,
+        y: (level_layout.y + node_layout.y).to_int() + subgraph_offset,
         width: node_layout.width.to_int(),
         height: node_layout.height.to_int(),
       })
     }
   }
-  let total_w = crater_layout.width.to_int()
-  let total_h = crater_layout.height.to_int()
+  let total_w = crater_layout.width.to_int() + subgraph_offset * 2
+  let total_h = crater_layout.height.to_int() + subgraph_offset * 2
   let nodes : Array[PositionedNode] = []
   for n in diagram.nodes {
     let box = layout_map.get_or_default(n.id, {
@@ -301,6 +302,62 @@ fn layout_graph(diagram : GraphDiagram, options : Options) -> PositionedGraph {
     height: total_h,
     direction: diagram.direction,
     kind: diagram.kind,
+  }
+}
+
+///|
+/// Calculates the bounding box for a parsed subgraph from positioned members.
+fn subgraph_box(
+  subgraph : GraphSubgraph,
+  nodes : Array[PositionedNode],
+) -> LayoutBox? {
+  let mut found = false
+  let mut min_x = 0
+  let mut min_y = 0
+  let mut max_x = 0
+  let mut max_y = 0
+  for positioned in nodes {
+    let mut is_member = false
+    for node_id in subgraph.node_ids {
+      if node_id == positioned.node.id {
+        is_member = true
+      }
+    }
+    if is_member {
+      let box = positioned.box
+      if !found {
+        found = true
+        min_x = box.x
+        min_y = box.y
+        max_x = box.x + box.width
+        max_y = box.y + box.height
+      } else {
+        if box.x < min_x {
+          min_x = box.x
+        }
+        if box.y < min_y {
+          min_y = box.y
+        }
+        if box.x + box.width > max_x {
+          max_x = box.x + box.width
+        }
+        if box.y + box.height > max_y {
+          max_y = box.y + box.height
+        }
+      }
+    }
+  }
+  if !found {
+    None
+  } else {
+    let x = if min_x > 0 { min_x - 1 } else { 0 }
+    let y = if min_y > 0 { min_y - 1 } else { 0 }
+    Some({
+      x,
+      y,
+      width: max_int(max_x - x + 1, display_width(subgraph.label) + 4),
+      height: max_y - y + 1,
+    })
   }
 }
 

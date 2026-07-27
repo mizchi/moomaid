@@ -11,6 +11,9 @@ pub fn render_to_string(
   match parse_mermaid(text) {
     Graph(g) => render_graph_ascii(g, options)
     Sequence(s) => render_sequence_ascii(s, options)
+    Timeline(t) => render_timeline_ascii(t)
+    GitGraph(g) => render_git_graph_ascii(g)
+    Gantt(g) => render_gantt_ascii(g)
   }
 }
 
@@ -22,6 +25,9 @@ pub fn experimental_render_to_svg(
   match parse_mermaid(text) {
     Graph(g) => render_graph_svg(g, options)
     Sequence(s) => render_sequence_svg(s, options)
+    Timeline(t) => render_timeline_svg(t, options)
+    GitGraph(g) => render_git_graph_svg(g, options)
+    Gantt(g) => render_gantt_svg(g, options)
   }
 }
 

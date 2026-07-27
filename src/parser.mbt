@@ -193,7 +193,14 @@ fn parse_flow_edges(
       continue
     }
     let t = trim_line(line)
-    if t.length() == 0 || t.has_prefix("%%") {
+    if t.length() == 0 ||
+      t.has_prefix("%%") ||
+      t.has_prefix("subgraph ") ||
+      t == "end" ||
+      t.has_prefix("direction ") ||
+      t.has_prefix("style ") ||
+      t.has_prefix("classDef ") ||
+      t.has_prefix("linkStyle ") {
       continue
     }
     parse_edge_chain(t, nodes, edges, default_shape)
@@ -305,7 +312,13 @@ fn parse_state(
     }
   }
   let nodes_array = Array::from_iter(nodes.values())
-  { kind: DiagramKind::State, direction, nodes: nodes_array, edges }
+  {
+    kind: DiagramKind::State,
+    direction,
+    nodes: nodes_array,
+    edges,
+    subgraphs: [],
+  }
 }
 
 ///|
@@ -314,8 +327,7 @@ fn parse_flowchart(
   header_index : Int,
   direction : Direction,
 ) -> GraphDiagram {
-  let (nodes, edges) = parse_flow_edges(lines, header_index, NodeShape::Rect)
-  { kind: DiagramKind::Flowchart, direction, nodes, edges }
+  parse_flowchart_with_subgraphs(lines, header_index, direction)
 }
 
 ///|
@@ -408,6 +420,7 @@ fn parse_class(lines : Array[String], header_index : Int) -> GraphDiagram {
     direction: Direction::TD,
     nodes: nodes_array,
     edges,
+    subgraphs: [],
   }
 }
 
@@ -479,7 +492,13 @@ fn parse_er(lines : Array[String], header_index : Int) -> GraphDiagram {
     ()
   }
   let nodes_array = Array::from_iter(nodes.values())
-  { kind: DiagramKind::Er, direction: Direction::TD, nodes: nodes_array, edges }
+  {
+    kind: DiagramKind::Er,
+    direction: Direction::TD,
+    nodes: nodes_array,
+    edges,
+    subgraphs: [],
+  }
 }
 
 ///|
@@ -503,9 +522,55 @@ fn ensure_actor(
 }
 
 ///|
+/// Adds or updates an explicitly declared sequence actor.
+fn define_actor(
+  map : Map[String, SequenceActor],
+  id : String,
+  label : String,
+  kind : ActorKind,
+) -> Unit {
+  map.set(id, { id, label, kind })
+}
+
+///|
+/// Parses `participant id as Label` and `actor id as Label` declarations.
+fn parse_actor_declaration(text : String) -> (String, String) {
+  match split_once(text, " ") {
+    Some((_, raw)) =>
+      match split_once(raw, " as ") {
+        Some((id, label)) => (trim_line(id), strip_quotes(trim_line(label)))
+        None => {
+          let id = trim_line(raw)
+          (id, id)
+        }
+      }
+    None => ("", "")
+  }
+}
+
+///|
+/// Parses a sequence note target and text.
+fn parse_sequence_note(text : String) -> (String, String)? {
+  match split_once(text, ":") {
+    Some((target_raw, note_raw)) => {
+      let parts = split_ws(target_raw)
+      if parts.length() == 0 {
+        None
+      } else {
+        Some((parts[parts.length() - 1], trim_line(note_raw)))
+      }
+    }
+    None => None
+  }
+}
+
+///|
 fn parse_sequence(lines : Array[String], header_index : Int) -> SequenceDiagram {
   let actors : Map[String, SequenceActor] = Map([])
   let messages : Array[SequenceMessage] = []
+  let events : Array[SequenceEvent] = []
+  let mut autonumber = false
+  let mut has_extended_syntax = false
   for i, line in lines {
     if i <= header_index {
       continue
@@ -515,15 +580,82 @@ fn parse_sequence(lines : Array[String], header_index : Int) -> SequenceDiagram 
       continue
     }
     if t.has_prefix("participant ") || t.has_prefix("actor ") {
-      let parts = split_ws(t)
-      if parts.length() >= 2 {
-        let id = parts[1]
-        let kind = if parts[0] == "actor" {
+      let (id, label) = parse_actor_declaration(t)
+      if id.length() > 0 {
+        let kind = if t.has_prefix("actor ") {
           ActorKind::Actor
         } else {
           ActorKind::Participant
         }
-        ensure_actor(actors, id, kind)
+        define_actor(actors, id, label, kind)
+      }
+      continue
+    }
+    let lower = t.to_lower()
+    if lower.has_prefix("autonumber") {
+      autonumber = true
+      has_extended_syntax = true
+      continue
+    }
+    if lower.has_prefix("note ") {
+      match parse_sequence_note(t) {
+        Some((target, text)) => {
+          events.push(SequenceEvent::Note(target, text))
+          has_extended_syntax = true
+        }
+        None => ()
+      }
+      continue
+    }
+    if lower.has_prefix("activate ") {
+      match split_once(t, " ") {
+        Some((_, actor)) => {
+          events.push(SequenceEvent::Activate(trim_line(actor)))
+          has_extended_syntax = true
+        }
+        None => ()
+      }
+      continue
+    }
+    if lower.has_prefix("deactivate ") {
+      match split_once(t, " ") {
+        Some((_, actor)) => {
+          events.push(SequenceEvent::Deactivate(trim_line(actor)))
+          has_extended_syntax = true
+        }
+        None => ()
+      }
+      continue
+    }
+    if lower == "end" {
+      events.push(SequenceEvent::BlockEnd)
+      has_extended_syntax = true
+      continue
+    }
+    if lower.has_prefix("else") || lower.has_prefix("and ") {
+      let label = match split_once(t, " ") {
+        Some((_, rest)) => trim_line(rest)
+        None => ""
+      }
+      events.push(SequenceEvent::BlockElse(label))
+      has_extended_syntax = true
+      continue
+    }
+    if lower.has_prefix("loop ") ||
+      lower.has_prefix("alt ") ||
+      lower.has_prefix("opt ") ||
+      lower.has_prefix("par ") ||
+      lower.has_prefix("critical ") ||
+      lower.has_prefix("break ") ||
+      lower.has_prefix("rect ") {
+      match split_once(t, " ") {
+        Some((kind, label)) => {
+          events.push(
+            SequenceEvent::BlockStart(trim_line(kind), trim_line(label)),
+          )
+          has_extended_syntax = true
+        }
+        None => ()
       }
       continue
     }
@@ -552,10 +684,30 @@ fn parse_sequence(lines : Array[String], header_index : Int) -> SequenceDiagram 
             }
             None => ()
           }
-          let to_id = trim_line(to)
+          let to_raw = trim_line(to)
+          let (to_id, activation) = if to_raw.has_prefix("+") {
+            (trim_line(drop_first_char(to_raw)), Some(true))
+          } else if to_raw.has_prefix("-") {
+            (trim_line(drop_first_char(to_raw)), Some(false))
+          } else {
+            (to_raw, None)
+          }
           ensure_actor(actors, from, ActorKind::Participant)
           ensure_actor(actors, to_id, ActorKind::Participant)
-          messages.push({ from, to: to_id, text, dashed })
+          let message = { from, to: to_id, text, dashed }
+          messages.push(message)
+          events.push(SequenceEvent::Message(message))
+          match activation {
+            Some(true) => {
+              events.push(SequenceEvent::Activate(to_id))
+              has_extended_syntax = true
+            }
+            Some(false) => {
+              events.push(SequenceEvent::Deactivate(to_id))
+              has_extended_syntax = true
+            }
+            None => ()
+          }
           ()
         }
         None => ()
@@ -563,7 +715,7 @@ fn parse_sequence(lines : Array[String], header_index : Int) -> SequenceDiagram 
     }
   }
   let actors_array = Array::from_iter(actors.values())
-  { actors: actors_array, messages }
+  { actors: actors_array, messages, events, autonumber, has_extended_syntax }
 }
 
 ///|
@@ -573,6 +725,12 @@ fn parse_mermaid(text : String) -> MermaidDiagram {
   let header_lower = header.to_lower()
   if header_lower.has_prefix("sequencediagram") {
     Sequence(parse_sequence(lines, header_index))
+  } else if header_lower.has_prefix("timeline") {
+    Timeline(parse_timeline(lines, header_index))
+  } else if header_lower.has_prefix("gitgraph") {
+    GitGraph(parse_git_graph(lines, header_index))
+  } else if header_lower.has_prefix("gantt") {
+    Gantt(parse_gantt(lines, header_index))
   } else if header_lower.has_prefix("classdiagram") {
     Graph(parse_class(lines, header_index))
   } else if header_lower.has_prefix("erdiagram") {

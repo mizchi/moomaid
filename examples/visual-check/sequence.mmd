@@ -1,0 +1,11 @@
+sequenceDiagram
+  participant C as Client
+  participant API
+  autonumber
+  C->>+API: Request
+  Note right of API: 処理中
+  alt success
+    API-->>-C: Response
+  else failure
+    API-->>-C: Error
+  end

@@ -39,11 +39,19 @@ pub struct GraphEdge {
 } derive(Debug, Eq)
 
 ///|
+pub struct GraphSubgraph {
+  id : String
+  label : String
+  node_ids : Array[String]
+} derive(Debug, Eq)
+
+///|
 pub struct GraphDiagram {
   kind : DiagramKind
   direction : Direction
   nodes : Array[GraphNode]
   edges : Array[GraphEdge]
+  subgraphs : Array[GraphSubgraph]
 } derive(Debug, Eq)
 
 ///|
@@ -68,15 +76,73 @@ pub struct SequenceMessage {
 } derive(Debug, Eq)
 
 ///|
+pub enum SequenceEvent {
+  Message(SequenceMessage)
+  Note(String, String)
+  Activate(String)
+  Deactivate(String)
+  BlockStart(String, String)
+  BlockElse(String)
+  BlockEnd
+} derive(Debug, Eq)
+
+///|
 pub struct SequenceDiagram {
   actors : Array[SequenceActor]
   messages : Array[SequenceMessage]
+  events : Array[SequenceEvent]
+  autonumber : Bool
+  has_extended_syntax : Bool
+} derive(Debug, Eq)
+
+///|
+pub struct TimelineItem {
+  period : String
+  events : Array[String]
+} derive(Debug, Eq)
+
+///|
+pub struct TimelineDiagram {
+  title : String?
+  items : Array[TimelineItem]
+} derive(Debug, Eq)
+
+///|
+pub enum GitGraphEvent {
+  Commit(String, String)
+  Branch(String)
+  Checkout(String)
+  Merge(String)
+} derive(Debug, Eq)
+
+///|
+pub struct GitGraphDiagram {
+  events : Array[GitGraphEvent]
+} derive(Debug, Eq)
+
+///|
+pub struct GanttTask {
+  section : String?
+  name : String
+  start : String
+  duration : String
+  status : String?
+} derive(Debug, Eq)
+
+///|
+pub struct GanttDiagram {
+  title : String?
+  date_format : String?
+  tasks : Array[GanttTask]
 } derive(Debug, Eq)
 
 ///|
 pub enum MermaidDiagram {
   Graph(GraphDiagram)
   Sequence(SequenceDiagram)
+  Timeline(TimelineDiagram)
+  GitGraph(GitGraphDiagram)
+  Gantt(GanttDiagram)
 } derive(Debug, Eq)
 
 ///|

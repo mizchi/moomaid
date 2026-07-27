@@ -109,6 +109,25 @@ fn render_graph_svg(diagram : GraphDiagram, options : SvgOptions) -> String {
   sb.write_view(svg_open(width_px, height_px, transparent, colors.bg))
   sb.write_view(arrow_marker_defs(colors.accent))
   sb.write_view("<g transform=\"translate(\{pad},\{pad})\">\n")
+  sb.write_view("<g class=\"subgraphs\">\n")
+  for subgraph in diagram.subgraphs {
+    match subgraph_box(subgraph, layout.nodes) {
+      Some(box) => {
+        let x = to_px_x(box.x)
+        let y = to_px_y(box.y)
+        let w = to_px_x(box.width)
+        let h = to_px_y(box.height)
+        sb.write_view(
+          "<rect x=\"\{x}\" y=\"\{y}\" width=\"\{w}\" height=\"\{h}\" rx=\"8\" ry=\"8\" fill=\"none\" stroke=\"\{colors.muted}\" stroke-width=\"1\" stroke-dasharray=\"4,3\" />\n",
+        )
+        sb.write_view(
+          "<text x=\"\{x + 8.0}\" y=\"\{y + cell_py * 0.8}\" font-size=\"\{font_size}\" fill=\"\{colors.muted}\" font-family=\"\{font}\">\{escape_xml(subgraph.label)}</text>\n",
+        )
+      }
+      None => ()
+    }
+  }
+  sb.write_view("</g>\n")
   sb.write_view("<g class=\"edges\">\n")
   for edge in layout.edges {
     let path_d = svg_edge_path(edge.start, edge.end, layout.direction)
@@ -195,6 +214,9 @@ fn render_sequence_svg(
   diagram : SequenceDiagram,
   options : SvgOptions,
 ) -> String {
+  if diagram.has_extended_syntax {
+    return render_extended_sequence_svg(diagram, options)
+  }
   let ascii_opts = default_ascii_options()
   let layout = layout_sequence(diagram, ascii_opts)
   let colors = build_colors(options)

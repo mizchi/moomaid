@@ -54,11 +54,37 @@ pub enum Direction {
   RL
 } derive(Eq, @debug.Debug)
 
+pub struct GanttDiagram {
+  title : String?
+  date_format : String?
+  tasks : Array[GanttTask]
+} derive(Eq, @debug.Debug)
+
+pub struct GanttTask {
+  section : String?
+  name : String
+  start : String
+  duration : String
+  status : String?
+} derive(Eq, @debug.Debug)
+
+pub struct GitGraphDiagram {
+  events : Array[GitGraphEvent]
+} derive(Eq, @debug.Debug)
+
+pub enum GitGraphEvent {
+  Commit(String, String)
+  Branch(String)
+  Checkout(String)
+  Merge(String)
+} derive(Eq, @debug.Debug)
+
 pub struct GraphDiagram {
   kind : DiagramKind
   direction : Direction
   nodes : Array[GraphNode]
   edges : Array[GraphEdge]
+  subgraphs : Array[GraphSubgraph]
 } derive(Eq, @debug.Debug)
 
 pub struct GraphEdge {
@@ -74,11 +100,20 @@ pub struct GraphNode {
   sections : Array[Array[String]]
 } derive(Eq, @debug.Debug)
 
+pub struct GraphSubgraph {
+  id : String
+  label : String
+  node_ids : Array[String]
+} derive(Eq, @debug.Debug)
+
 type LayoutBox derive(Eq, @debug.Debug)
 
 pub enum MermaidDiagram {
   Graph(GraphDiagram)
   Sequence(SequenceDiagram)
+  Timeline(TimelineDiagram)
+  GitGraph(GitGraphDiagram)
+  Gantt(GanttDiagram)
 } derive(Eq, @debug.Debug)
 
 pub enum NodeShape {
@@ -126,6 +161,19 @@ pub struct SequenceActor {
 pub struct SequenceDiagram {
   actors : Array[SequenceActor]
   messages : Array[SequenceMessage]
+  events : Array[SequenceEvent]
+  autonumber : Bool
+  has_extended_syntax : Bool
+} derive(Eq, @debug.Debug)
+
+pub enum SequenceEvent {
+  Message(SequenceMessage)
+  Note(String, String)
+  Activate(String)
+  Deactivate(String)
+  BlockStart(String, String)
+  BlockElse(String)
+  BlockEnd
 } derive(Eq, @debug.Debug)
 
 pub struct SequenceMessage {
@@ -145,6 +193,16 @@ pub struct SvgOptions {
   border : String?
   font : String?
   transparent : Bool?
+} derive(Eq, @debug.Debug)
+
+pub struct TimelineDiagram {
+  title : String?
+  items : Array[TimelineItem]
+} derive(Eq, @debug.Debug)
+
+pub struct TimelineItem {
+  period : String
+  events : Array[String]
 } derive(Eq, @debug.Debug)
 
 // Type aliases

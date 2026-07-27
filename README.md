@@ -91,6 +91,16 @@ graph TD
   Error --> Done
 ```
 
+`subgraph ... end` によるグループ化にも対応しています。
+
+```mermaid
+flowchart TD
+  Client --> API
+  subgraph backend[Backend]
+    API --> DB
+  end
+```
+
 ### Sequence Diagram (`sequenceDiagram`)
 
 Use for describing layer boundaries and API call flows.
@@ -109,10 +119,18 @@ sequenceDiagram
   API-->>Browser: 200 JSON
 ```
 
+参加者の別名、`autonumber`、note、activation、`loop` / `alt` / `opt` /
+`par` / `break` の制御ブロックを扱えます。拡張構文のASCII出力は、可搬性を
+優先したイベントストリーム形式です。
+
 ### Other supported types
 
 - `stateDiagram-v2` - State machine diagrams
 - `classDiagram` - Class diagrams
+- `erDiagram` - Entity relationship diagrams
+- `timeline` - Chronological event outlines
+- `gitGraph` - Branch, checkout, commit, and merge histories
+- `gantt` - Sections and task start/duration tables
 
 ## Library Usage
 

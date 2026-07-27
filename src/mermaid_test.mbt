@@ -17,6 +17,7 @@ test "parse flowchart" {
       #|      { id: "B", label: "End", shape: Rect, sections: [["End"]] },
       #|    ],
       #|    edges: [{ from: "A", to: "B", label: None }],
+      #|    subgraphs: [],
       #|  },
       #|)
     ),
@@ -255,6 +256,7 @@ test "parse chained edges" {
       #|      { from: "Input", to: "Process", label: None },
       #|      { from: "Process", to: "Output", label: None },
       #|    ],
+      #|    subgraphs: [],
       #|  },
       #|)
     ),

@@ -423,6 +423,22 @@ fn Canvas::render(self : Canvas) -> String {
 fn render_graph_canvas(diagram : GraphDiagram, options : Options) -> Canvas {
   let layout = layout_graph(diagram, options)
   let canvas = Canvas::new(layout.width + 2, layout.height + 2)
+  // Pass 0: draw subgraph containers behind edges and nodes.
+  for subgraph in diagram.subgraphs {
+    match subgraph_box(subgraph, layout.nodes) {
+      Some(box) => {
+        canvas.draw_rounded_box(
+          box.x,
+          box.y,
+          box.width,
+          box.height,
+          options.use_ascii,
+        )
+        canvas.draw_text(box.x + 2, box.y, subgraph.label)
+      }
+      None => ()
+    }
+  }
   // Pass 1: draw all edge lines
   for edge in layout.edges {
     canvas.draw_edge_line(edge.start, edge.end, options.use_ascii)
@@ -491,6 +507,13 @@ fn render_graph_canvas(diagram : GraphDiagram, options : Options) -> Canvas {
       }
     }
   }
+  // Pass 3: restore container labels over connectors crossing their borders.
+  for subgraph in diagram.subgraphs {
+    match subgraph_box(subgraph, layout.nodes) {
+      Some(box) => canvas.draw_text(box.x + 2, box.y, subgraph.label)
+      None => ()
+    }
+  }
   canvas
 }
 
@@ -533,5 +556,9 @@ fn render_sequence_ascii(
   diagram : SequenceDiagram,
   options : Options,
 ) -> String {
-  render_sequence_canvas(diagram, options).render()
+  if diagram.has_extended_syntax {
+    render_extended_sequence_ascii(diagram)
+  } else {
+    render_sequence_canvas(diagram, options).render()
+  }
 }
