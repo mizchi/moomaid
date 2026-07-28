@@ -19,3 +19,13 @@ SVGの目視確認はHTMLを生成してブラウザで開きます。
 just cli --html examples/visual-check/sequence.mmd > /tmp/moomaid-preview.html
 open /tmp/moomaid-preview.html
 ```
+
+レイアウト上の潜在的な重なりを確認するには、Wasm skill のデバッグ SVG を使います。
+
+```bash
+moon runwasm src/cmd/skill --format svg --debug-layout < examples/visual-check/subgraph.mmd > /tmp/moomaid-debug.svg
+open /tmp/moomaid-debug.svg
+```
+
+ノード枠は青、エッジラベルは緑、subgraph 見出しは紫、エッジ経路は橙、
+衝突候補は赤で表示されます。

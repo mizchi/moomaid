@@ -23,6 +23,7 @@ pub struct SvgOptions {
   padding : Int?
   title : String?
   description : String?
+  debug_layout : Bool?
 } derive(Debug, Eq)
 
 ///|
@@ -58,6 +59,7 @@ fn default_render_options() -> SvgOptions {
     padding: Some(20),
     title: None,
     description: None,
+    debug_layout: Some(false),
   }
 }
 
@@ -105,6 +107,11 @@ fn resolve_transparent(options : SvgOptions) -> Bool {
 ///|
 fn resolve_svg_padding(options : SvgOptions) -> Int {
   opt_or(options.padding, 20)
+}
+
+///|
+fn resolve_debug_layout(options : SvgOptions) -> Bool {
+  opt_or(options.debug_layout, false)
 }
 
 ///|

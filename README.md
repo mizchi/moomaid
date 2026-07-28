@@ -58,14 +58,18 @@ artifact on success.
 # Local Wasm package
 moon runwasm src/cmd/skill --format ascii < diagram.mmd
 moon runwasm src/cmd/skill --format svg < diagram.mmd
+moon runwasm src/cmd/skill --format svg --debug-layout < diagram.mmd
 
 # Standalone script prototype with the same contract
-moon run examples/moomaid.mbtx --format ascii < diagram.mmd
+moon run --target wasm examples/moomaid.mbtx --format ascii < diagram.mmd
 ```
 
 `--format ascii|svg` controls the artifact and defaults to `ascii`. For SVG,
 use `--theme`, `--font`, `--padding`, `--background`, `--transparent`,
 `--title`, and `--description` to control presentation and accessibility.
+`--debug-layout` adds flowchart diagnostics: node bounds are blue, edge-label
+bounds are green, subgraph headings are purple, edge paths are orange, and
+potential overlaps are highlighted in red.
 On invalid Mermaid input, the command writes a `line` and `column` diagnostic
 to standard error, leaves standard output empty, and exits with status `1`.
 Invalid command-line arguments exit with status `2`.

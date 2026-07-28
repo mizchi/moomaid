@@ -232,8 +232,10 @@ pub struct SvgOptions {
   padding : Int?
   title : String?
   description : String?
+  debug_layout : Bool?
 } derive(Eq, @debug.Debug)
 pub fn SvgOptions::with_background(Self, String) -> Self
+pub fn SvgOptions::with_debug_layout(Self) -> Self
 pub fn SvgOptions::with_description(Self, String) -> Self
 pub fn SvgOptions::with_font(Self, String) -> Self
 pub fn SvgOptions::with_padding(Self, Int) -> Self

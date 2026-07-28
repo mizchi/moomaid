@@ -61,6 +61,7 @@ pub fn SvgOptions::with_background(
     padding: self.padding,
     title: self.title,
     description: self.description,
+    debug_layout: self.debug_layout,
   }
 }
 
@@ -79,6 +80,7 @@ pub fn SvgOptions::with_font(self : SvgOptions, font : String) -> SvgOptions {
     padding: self.padding,
     title: self.title,
     description: self.description,
+    debug_layout: self.debug_layout,
   }
 }
 
@@ -97,6 +99,7 @@ pub fn SvgOptions::with_padding(self : SvgOptions, padding : Int) -> SvgOptions 
     padding: Some(padding),
     title: self.title,
     description: self.description,
+    debug_layout: self.debug_layout,
   }
 }
 
@@ -115,6 +118,7 @@ pub fn SvgOptions::with_transparent(self : SvgOptions) -> SvgOptions {
     padding: self.padding,
     title: self.title,
     description: self.description,
+    debug_layout: self.debug_layout,
   }
 }
 
@@ -133,6 +137,7 @@ pub fn SvgOptions::with_title(self : SvgOptions, title : String) -> SvgOptions {
     padding: self.padding,
     title: Some(title),
     description: self.description,
+    debug_layout: self.debug_layout,
   }
 }
 
@@ -154,6 +159,28 @@ pub fn SvgOptions::with_description(
     padding: self.padding,
     title: self.title,
     description: Some(description),
+    debug_layout: self.debug_layout,
+  }
+}
+
+///|
+/// Draws graph layout diagnostics in SVG output. Node, label, and edge bounds
+/// are colorized; potential overlaps are highlighted in red.
+pub fn SvgOptions::with_debug_layout(self : SvgOptions) -> SvgOptions {
+  {
+    bg: self.bg,
+    fg: self.fg,
+    line: self.line,
+    accent: self.accent,
+    muted: self.muted,
+    surface: self.surface,
+    border: self.border,
+    font: self.font,
+    transparent: self.transparent,
+    padding: self.padding,
+    title: self.title,
+    description: self.description,
+    debug_layout: Some(true),
   }
 }
 
@@ -177,6 +204,7 @@ fn svg_options_from_colors(
     padding: Some(padding),
     title: None,
     description: None,
+    debug_layout: Some(false),
   }
 }
 

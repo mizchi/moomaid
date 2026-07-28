@@ -1,7 +1,7 @@
 ///| Standalone prototype for the Mooncakes skill command contract.
 ///|
 ///| Run with:
-///| `moon run examples/moomaid.mbtx --format ascii < diagram.mmd`
+///| `moon run --target wasm examples/moomaid.mbtx --format ascii < diagram.mmd`
 import {
   "mizchi/moomaid@0.3.1" @mermaid,
   "moonbitlang/core/env",

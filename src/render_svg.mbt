@@ -321,6 +321,451 @@ fn svg_open(
 }
 
 ///|
+priv enum DebugBoxKind {
+  Node(String)
+  EdgeLabel(Int)
+  SubgraphLabel
+  Collision
+}
+
+///|
+priv struct DebugBox {
+  x : Double
+  y : Double
+  width : Double
+  height : Double
+  kind : DebugBoxKind
+}
+
+///|
+priv struct DebugPoint {
+  px : Double
+  py : Double
+}
+
+///|
+fn debug_box_intersection(left : DebugBox, right : DebugBox) -> DebugBox? {
+  let left_x = if left.x > right.x { left.x } else { right.x }
+  let top_y = if left.y > right.y { left.y } else { right.y }
+  let left_right = left.x + left.width
+  let right_right = right.x + right.width
+  let right_x = if left_right < right_right { left_right } else { right_right }
+  let left_bottom = left.y + left.height
+  let right_bottom = right.y + right.height
+  let bottom_y = if left_bottom < right_bottom {
+    left_bottom
+  } else {
+    right_bottom
+  }
+  if left_x < right_x && top_y < bottom_y {
+    Some({
+      x: left_x,
+      y: top_y,
+      width: right_x - left_x,
+      height: bottom_y - top_y,
+      kind: DebugBoxKind::Collision,
+    })
+  } else {
+    None
+  }
+}
+
+///|
+fn debug_point_in_box(point : DebugPoint, box : DebugBox) -> Bool {
+  point.px >= box.x &&
+  point.px <= box.x + box.width &&
+  point.py >= box.y &&
+  point.py <= box.y + box.height
+}
+
+///|
+fn debug_cross(
+  first : DebugPoint,
+  second : DebugPoint,
+  third : DebugPoint,
+) -> Double {
+  (second.px - first.px) * (third.py - first.py) -
+  (second.py - first.py) * (third.px - first.px)
+}
+
+///|
+fn debug_point_on_segment(
+  point : DebugPoint,
+  start : DebugPoint,
+  end_ : DebugPoint,
+) -> Bool {
+  point.px >= (if start.px < end_.px { start.px } else { end_.px }) &&
+  point.px <= (if start.px > end_.px { start.px } else { end_.px }) &&
+  point.py >= (if start.py < end_.py { start.py } else { end_.py }) &&
+  point.py <= (if start.py > end_.py { start.py } else { end_.py })
+}
+
+///|
+fn debug_segments_intersect(
+  first_start : DebugPoint,
+  first_end : DebugPoint,
+  second_start : DebugPoint,
+  second_end : DebugPoint,
+) -> Bool {
+  let first_a = debug_cross(first_start, first_end, second_start)
+  let first_b = debug_cross(first_start, first_end, second_end)
+  let second_a = debug_cross(second_start, second_end, first_start)
+  let second_b = debug_cross(second_start, second_end, first_end)
+  if first_a == 0.0 &&
+    debug_point_on_segment(second_start, first_start, first_end) {
+    true
+  } else if first_b == 0.0 &&
+    debug_point_on_segment(second_end, first_start, first_end) {
+    true
+  } else if second_a == 0.0 &&
+    debug_point_on_segment(first_start, second_start, second_end) {
+    true
+  } else if second_b == 0.0 &&
+    debug_point_on_segment(first_end, second_start, second_end) {
+    true
+  } else {
+    ((first_a > 0.0 && first_b < 0.0) || (first_a < 0.0 && first_b > 0.0)) &&
+    ((second_a > 0.0 && second_b < 0.0) || (second_a < 0.0 && second_b > 0.0))
+  }
+}
+
+///|
+fn debug_segment_hits_box(
+  start : DebugPoint,
+  end_ : DebugPoint,
+  box : DebugBox,
+) -> Bool {
+  if debug_point_in_box(start, box) || debug_point_in_box(end_, box) {
+    return true
+  }
+  let top_left : DebugPoint = { px: box.x, py: box.y }
+  let top_right : DebugPoint = { px: box.x + box.width, py: box.y }
+  let bottom_left : DebugPoint = { px: box.x, py: box.y + box.height }
+  let bottom_right : DebugPoint = {
+    px: box.x + box.width,
+    py: box.y + box.height,
+  }
+  debug_segments_intersect(start, end_, top_left, top_right) ||
+  debug_segments_intersect(start, end_, top_right, bottom_right) ||
+  debug_segments_intersect(start, end_, bottom_right, bottom_left) ||
+  debug_segments_intersect(start, end_, bottom_left, top_left)
+}
+
+///|
+fn debug_cubic_point(
+  start : DebugPoint,
+  control_one : DebugPoint,
+  control_two : DebugPoint,
+  end_ : DebugPoint,
+  t : Double,
+) -> DebugPoint {
+  let u = 1.0 - t
+  {
+    px: u * u * u * start.px +
+    3.0 * u * u * t * control_one.px +
+    3.0 * u * t * t * control_two.px +
+    t * t * t * end_.px,
+    py: u * u * u * start.py +
+    3.0 * u * u * t * control_one.py +
+    3.0 * u * t * t * control_two.py +
+    t * t * t * end_.py,
+  }
+}
+
+///|
+fn debug_edge_curve(
+  edge : PositionedEdge,
+  direction : Direction,
+  lane_offset : Double,
+) -> (DebugPoint, DebugPoint, DebugPoint, DebugPoint) {
+  let x1 = to_px_x(edge.start.x)
+  let y1 = to_px_y(edge.start.y)
+  let x2 = to_px_x(edge.end.x)
+  let y2 = to_px_y(edge.end.y)
+  if edge.edge.from == edge.edge.to {
+    let outer_x = if x1 > x2 { x1 } else { x2 }
+    (
+      { px: outer_x, py: y1 },
+      { px: outer_x + 42.0, py: y1 - 36.0 },
+      { px: outer_x + 42.0, py: y1 + 36.0 },
+      { px: outer_x + 14.0, py: y1 },
+    )
+  } else {
+    match direction {
+      Direction::TD | Direction::BT => {
+        let mid_y = (y1 + y2) / 2.0
+        (
+          { px: x1, py: y1 },
+          { px: x1 + lane_offset, py: mid_y },
+          { px: x2 + lane_offset, py: mid_y },
+          { px: x2, py: y2 },
+        )
+      }
+      Direction::LR | Direction::RL => {
+        let mid_x = (x1 + x2) / 2.0
+        (
+          { px: x1, py: y1 },
+          { px: mid_x, py: y1 + lane_offset },
+          { px: mid_x, py: y2 + lane_offset },
+          { px: x2, py: y2 },
+        )
+      }
+    }
+  }
+}
+
+///|
+fn debug_edge_hits_box(
+  edge : PositionedEdge,
+  direction : Direction,
+  lane_offset : Double,
+  box : DebugBox,
+) -> Bool {
+  let (start, control_one, control_two, end_) = debug_edge_curve(
+    edge, direction, lane_offset,
+  )
+  let mut previous = start
+  let mut i = 1
+  while i <= 16 {
+    let point = debug_cubic_point(
+      start,
+      control_one,
+      control_two,
+      end_,
+      i.to_double() / 16.0,
+    )
+    if debug_segment_hits_box(previous, point, box) {
+      return true
+    }
+    previous = point
+    i += 1
+  }
+  false
+}
+
+///|
+fn debug_edge_owns_box(
+  edge : PositionedEdge,
+  edge_index : Int,
+  box : DebugBox,
+) -> Bool {
+  match box.kind {
+    DebugBoxKind::Node(node_id) =>
+      edge.edge.from == node_id || edge.edge.to == node_id
+    DebugBoxKind::EdgeLabel(index) => edge_index == index
+    _ => false
+  }
+}
+
+///|
+fn debug_layout_boxes(
+  diagram : GraphDiagram,
+  layout : PositionedGraph,
+  font_size : Double,
+) -> Array[DebugBox] {
+  let boxes : Array[DebugBox] = []
+  for node in layout.nodes {
+    let box = node.box
+    boxes.push({
+      x: to_px_x(box.x),
+      y: to_px_y(box.y),
+      width: to_px_x(box.width),
+      height: to_px_y(box.height),
+      kind: DebugBoxKind::Node(node.node.id),
+    })
+  }
+  for index, edge in layout.edges {
+    match edge.edge.label {
+      Some(label) => {
+        let lane_offset = edge_lane_offset(layout.edges, index)
+        let (x, y) = svg_edge_label_position(
+          edge.start,
+          edge.end,
+          layout.direction,
+          lane_offset,
+        )
+        let text_w = svg_edge_label_width(label, font_size)
+        let text_h = font_size * 1.2
+        boxes.push({
+          x: x - text_w / 2.0 - 4.0,
+          y: y - text_h / 2.0 - 2.0,
+          width: text_w + 8.0,
+          height: text_h + 4.0,
+          kind: DebugBoxKind::EdgeLabel(index),
+        })
+      }
+      None => ()
+    }
+  }
+  for subgraph in diagram.subgraphs {
+    match subgraph_box(subgraph, diagram.subgraphs, layout.nodes) {
+      Some(box) => {
+        let text_w = svg_edge_label_width(subgraph.label, font_size)
+        let text_h = font_size * 1.2
+        boxes.push({
+          x: to_px_x(box.x) + 4.0,
+          y: to_px_y(box.y) + 2.0,
+          width: text_w + 8.0,
+          height: text_h + 4.0,
+          kind: DebugBoxKind::SubgraphLabel,
+        })
+      }
+      None => ()
+    }
+  }
+  boxes
+}
+
+///|
+fn debug_layout_collisions(
+  layout : PositionedGraph,
+  boxes : Array[DebugBox],
+) -> Array[DebugBox] {
+  let collisions : Array[DebugBox] = []
+  let mut i = 0
+  while i < boxes.length() {
+    let mut j = i + 1
+    while j < boxes.length() {
+      match debug_box_intersection(boxes[i], boxes[j]) {
+        Some(collision) => collisions.push(collision)
+        None => ()
+      }
+      j += 1
+    }
+    i += 1
+  }
+  for edge_index, edge in layout.edges {
+    let lane_offset = edge_lane_offset(layout.edges, edge_index)
+    for box in boxes {
+      if !debug_edge_owns_box(edge, edge_index, box) &&
+        debug_edge_hits_box(edge, layout.direction, lane_offset, box) {
+        collisions.push({
+          x: box.x,
+          y: box.y,
+          width: box.width,
+          height: box.height,
+          kind: DebugBoxKind::Collision,
+        })
+      }
+    }
+  }
+  for first_index, first in layout.edges {
+    let mut second_index = first_index + 1
+    while second_index < layout.edges.length() {
+      let second = layout.edges[second_index]
+      let share_node = first.edge.from == second.edge.from ||
+        first.edge.from == second.edge.to ||
+        first.edge.to == second.edge.from ||
+        first.edge.to == second.edge.to
+      if !share_node {
+        let first_lane = edge_lane_offset(layout.edges, first_index)
+        let second_lane = edge_lane_offset(layout.edges, second_index)
+        let (first_start, first_control_one, first_control_two, first_end) = debug_edge_curve(
+          first,
+          layout.direction,
+          first_lane,
+        )
+        let (second_start, second_control_one, second_control_two, second_end) = debug_edge_curve(
+          second,
+          layout.direction,
+          second_lane,
+        )
+        let mut previous_first = first_start
+        let mut first_step = 1
+        let mut found_intersection = false
+        while first_step <= 16 && !found_intersection {
+          let current_first = debug_cubic_point(
+            first_start,
+            first_control_one,
+            first_control_two,
+            first_end,
+            first_step.to_double() / 16.0,
+          )
+          let mut previous_second = second_start
+          let mut second_step = 1
+          while second_step <= 16 && !found_intersection {
+            let current_second = debug_cubic_point(
+              second_start,
+              second_control_one,
+              second_control_two,
+              second_end,
+              second_step.to_double() / 16.0,
+            )
+            if debug_segments_intersect(
+                previous_first, current_first, previous_second, current_second,
+              ) {
+              collisions.push({
+                x: (current_first.px + current_second.px) / 2.0 - 4.0,
+                y: (current_first.py + current_second.py) / 2.0 - 4.0,
+                width: 8.0,
+                height: 8.0,
+                kind: DebugBoxKind::Collision,
+              })
+              found_intersection = true
+            }
+            previous_second = current_second
+            second_step += 1
+          }
+          previous_first = current_first
+          first_step += 1
+        }
+      }
+      second_index += 1
+    }
+  }
+  collisions
+}
+
+///|
+fn render_debug_layout_svg(
+  diagram : GraphDiagram,
+  layout : PositionedGraph,
+  font_size : Double,
+) -> String {
+  let boxes = debug_layout_boxes(diagram, layout, font_size)
+  let collisions = debug_layout_collisions(layout, boxes)
+  let sb = StringBuilder::new()
+  sb.write_view("<g class=\"debug-layout\" pointer-events=\"none\">\n")
+  for index, edge in layout.edges {
+    let lane_offset = edge_lane_offset(layout.edges, index)
+    let path_d = svg_edge_path(
+      edge.start,
+      edge.end,
+      layout.direction,
+      lane_offset,
+      edge.edge.from == edge.edge.to,
+    )
+    sb.write_view(
+      "<path class=\"debug-edge-path\" d=\"\{path_d}\" fill=\"none\" stroke=\"#F59E0B\" stroke-width=\"1\" stroke-dasharray=\"3,2\" opacity=\"0.85\" />\n",
+    )
+  }
+  for box in boxes {
+    match box.kind {
+      DebugBoxKind::Node(_) =>
+        sb.write_view(
+          "<rect class=\"debug-node-box\" x=\"\{box.x}\" y=\"\{box.y}\" width=\"\{box.width}\" height=\"\{box.height}\" fill=\"#93C5FD\" fill-opacity=\"0.12\" stroke=\"#2563EB\" stroke-width=\"1\" />\n",
+        )
+      DebugBoxKind::EdgeLabel(_) =>
+        sb.write_view(
+          "<rect class=\"debug-edge-label-box\" x=\"\{box.x}\" y=\"\{box.y}\" width=\"\{box.width}\" height=\"\{box.height}\" fill=\"#86EFAC\" fill-opacity=\"0.12\" stroke=\"#16A34A\" stroke-width=\"1\" />\n",
+        )
+      DebugBoxKind::SubgraphLabel =>
+        sb.write_view(
+          "<rect class=\"debug-subgraph-label-box\" x=\"\{box.x}\" y=\"\{box.y}\" width=\"\{box.width}\" height=\"\{box.height}\" fill=\"#C4B5FD\" fill-opacity=\"0.12\" stroke=\"#7C3AED\" stroke-width=\"1\" />\n",
+        )
+      DebugBoxKind::Collision => ()
+    }
+  }
+  for collision in collisions {
+    sb.write_view(
+      "<rect class=\"debug-collision\" x=\"\{collision.x}\" y=\"\{collision.y}\" width=\"\{collision.width}\" height=\"\{collision.height}\" fill=\"#FCA5A5\" fill-opacity=\"0.45\" stroke=\"#DC2626\" stroke-width=\"1.5\" />\n",
+    )
+  }
+  sb.write_view("</g>\n")
+  sb.to_string()
+}
+
+///|
 fn svg_state_circle(
   cx : Double,
   cy : Double,
@@ -515,6 +960,9 @@ fn render_graph_svg(diagram : GraphDiagram, options : SvgOptions) -> String {
     sb.write_view("</g>\n")
   }
   sb.write_view("</g>\n")
+  if resolve_debug_layout(options) {
+    sb.write_view(render_debug_layout_svg(diagram, layout, font_size))
+  }
   sb.write_view("</g>\n")
   sb.write_view("</svg>")
   sb.to_string()

@@ -6,13 +6,14 @@ struct SkillOptions {
   padding : Int?
   background : String?
   transparent : Bool
+  debug_layout : Bool
   title : String?
   description : String?
 }
 
 ///|
 fn usage() -> String {
-  "Usage: moomaid-skill [--format ascii|svg] [--theme NAME] [--font NAME] [--padding PX] [--background COLOR] [--transparent] [--title TEXT] [--description TEXT] < Mermaid.mmd"
+  "Usage: moomaid-skill [--format ascii|svg] [--theme NAME] [--font NAME] [--padding PX] [--background COLOR] [--transparent] [--debug-layout] [--title TEXT] [--description TEXT] < Mermaid.mmd"
 }
 
 ///|
@@ -23,6 +24,7 @@ fn parse_options(args : Array[String]) -> Result[SkillOptions, String] {
   let mut padding : Int? = None
   let mut background : String? = None
   let mut transparent = false
+  let mut debug_layout = false
   let mut title : String? = None
   let mut description : String? = None
   let mut i = 1
@@ -30,6 +32,11 @@ fn parse_options(args : Array[String]) -> Result[SkillOptions, String] {
     let arg = args[i]
     if arg == "--transparent" {
       transparent = true
+      i += 1
+      continue
+    }
+    if arg == "--debug-layout" {
+      debug_layout = true
       i += 1
       continue
     }
@@ -77,6 +84,7 @@ fn parse_options(args : Array[String]) -> Result[SkillOptions, String] {
     padding is Some(_) ||
     background is Some(_) ||
     transparent ||
+    debug_layout ||
     title is Some(_) ||
     description is Some(_)
   if format == @mermaid.OutputFormat::Ascii && has_svg_options {
@@ -89,6 +97,7 @@ fn parse_options(args : Array[String]) -> Result[SkillOptions, String] {
     padding,
     background,
     transparent,
+    debug_layout,
     title,
     description,
   })
@@ -120,6 +129,9 @@ fn svg_options_for(
   }
   if options.transparent {
     svg_options = svg_options.with_transparent()
+  }
+  if options.debug_layout {
+    svg_options = svg_options.with_debug_layout()
   }
   match options.title {
     Some(title) => svg_options = svg_options.with_title(title)
