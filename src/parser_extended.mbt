@@ -140,6 +140,74 @@ fn parse_timeline(lines : Array[String], header_index : Int) -> TimelineDiagram 
 }
 
 ///|
+fn parse_mindmap(lines : Array[String], header_index : Int) -> OutlineDiagram {
+  let items : Array[OutlineItem] = []
+  for i, line in lines {
+    if i <= header_index {
+      continue
+    }
+    let text = trim_line(line)
+    if text.length() == 0 || text.has_prefix("%%") {
+      continue
+    }
+    let depth = (line.length() - text.length()) / 2
+    items.push({ depth, label: text })
+  }
+  { kind: OutlineKind::Mindmap, title: None, items }
+}
+
+///|
+fn parse_journey(lines : Array[String], header_index : Int) -> OutlineDiagram {
+  let mut title : String? = None
+  let items : Array[OutlineItem] = []
+  for i, line in lines {
+    if i <= header_index {
+      continue
+    }
+    let text = trim_line(line)
+    if text.length() == 0 || text.has_prefix("%%") {
+      continue
+    }
+    if text.has_prefix("title ") {
+      title = Some(directive_value(text))
+    } else if text.has_prefix("section ") {
+      items.push({ depth: 0, label: directive_value(text) })
+    } else {
+      items.push({ depth: 1, label: text })
+    }
+  }
+  { kind: OutlineKind::Journey, title, items }
+}
+
+///|
+fn parse_pie(
+  lines : Array[String],
+  header_index : Int,
+  header : String,
+) -> OutlineDiagram {
+  let lower = header.to_lower()
+  let title = if lower.has_prefix("pie title ") {
+    match split_once(header, "title ") {
+      Some((_, text)) => Some(trim_line(text))
+      None => None
+    }
+  } else {
+    None
+  }
+  let items : Array[OutlineItem] = []
+  for i, line in lines {
+    if i <= header_index {
+      continue
+    }
+    let text = trim_line(line)
+    if text.length() > 0 && !text.has_prefix("%%") {
+      items.push({ depth: 0, label: text })
+    }
+  }
+  { kind: OutlineKind::Pie, title, items }
+}
+
+///|
 /// Extracts one quoted or unquoted gitGraph command attribute.
 fn parse_git_attribute(text : String, key : String) -> String? {
   match split_once(text, key + ":") {

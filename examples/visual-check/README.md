@@ -8,6 +8,9 @@ just cli examples/visual-check/sequence.mmd
 just cli examples/visual-check/timeline.mmd
 just cli examples/visual-check/gitgraph.mmd
 just cli examples/visual-check/gantt.mmd
+just cli examples/visual-check/mindmap.mmd
+just cli examples/visual-check/journey.mmd
+just cli examples/visual-check/pie.mmd
 ```
 
 SVGの目視確認はHTMLを生成してブラウザで開きます。

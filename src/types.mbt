@@ -7,6 +7,13 @@ pub enum DiagramKind {
 } derive(Debug, Eq)
 
 ///|
+pub struct ParseDiagnostic {
+  line : Int
+  column : Int
+  message : String
+} derive(Debug, Eq)
+
+///|
 pub enum Direction {
   TD
   LR
@@ -111,6 +118,26 @@ pub struct TimelineDiagram {
 } derive(Debug, Eq)
 
 ///|
+pub enum OutlineKind {
+  Mindmap
+  Journey
+  Pie
+} derive(Debug, Eq)
+
+///|
+pub struct OutlineItem {
+  depth : Int
+  label : String
+} derive(Debug, Eq)
+
+///|
+pub struct OutlineDiagram {
+  kind : OutlineKind
+  title : String?
+  items : Array[OutlineItem]
+} derive(Debug, Eq)
+
+///|
 pub enum GitGraphEvent {
   Commit(String, String)
   Branch(String)
@@ -146,6 +173,7 @@ pub enum MermaidDiagram {
   Timeline(TimelineDiagram)
   GitGraph(GitGraphDiagram)
   Gantt(GanttDiagram)
+  Outline(OutlineDiagram)
 } derive(Debug, Eq)
 
 ///|

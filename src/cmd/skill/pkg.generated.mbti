@@ -6,6 +6,7 @@ package "mizchi/moomaid/cmd/skill"
 // Errors
 
 // Types and methods
+type SkillOptions
 
 // Type aliases
 

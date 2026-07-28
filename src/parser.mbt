@@ -10,6 +10,130 @@ fn first_non_empty_line(lines : Array[String]) -> (Int, String) {
 }
 
 ///|
+fn first_non_empty_line_with_column(
+  lines : Array[String],
+) -> (Int, String, Int) {
+  for i, line in lines {
+    let text = trim_line(line)
+    if text.length() > 0 {
+      return (i, text, line.length() - text.length() + 1)
+    }
+  }
+  (0, "", 1)
+}
+
+///|
+fn is_supported_diagram_header(header : String) -> Bool {
+  let lower = header.to_lower()
+  lower.has_prefix("sequencediagram") ||
+  lower.has_prefix("timeline") ||
+  lower.has_prefix("gitgraph") ||
+  lower.has_prefix("gantt") ||
+  lower.has_prefix("classdiagram") ||
+  lower.has_prefix("erdiagram") ||
+  lower.has_prefix("statediagram") ||
+  lower.has_prefix("mindmap") ||
+  lower.has_prefix("journey") ||
+  lower.has_prefix("pie") ||
+  lower.has_prefix("graph") ||
+  lower.has_prefix("flowchart")
+}
+
+///|
+fn is_flowchart_header(header : String) -> Bool {
+  let lower = header.to_lower()
+  lower.has_prefix("graph") || lower.has_prefix("flowchart")
+}
+
+///|
+fn header_name(header : String) -> String {
+  match split_once(header, " ") {
+    Some((name, _)) => name
+    None => header
+  }
+}
+
+///|
+fn trailing_flowchart_arrow(text : String) -> String? {
+  let trimmed = trim_line(text)
+  if trimmed.has_suffix("-->") {
+    Some("-->")
+  } else if trimmed.has_suffix("->") {
+    Some("->")
+  } else if trimmed.has_suffix("--") {
+    Some("--")
+  } else {
+    None
+  }
+}
+
+///|
+fn validate_mermaid(text : String) -> Result[Unit, ParseDiagnostic] {
+  let lines = split_lines(text)
+  let (header_index, header, header_column) = first_non_empty_line_with_column(
+    lines,
+  )
+  if header.length() == 0 {
+    return Err({
+      line: 1,
+      column: 1,
+      message: "expected a Mermaid diagram header",
+    })
+  }
+  if !is_supported_diagram_header(header) {
+    return Err({
+      line: header_index + 1,
+      column: header_column,
+      message: "unsupported Mermaid diagram type: " + header_name(header),
+    })
+  }
+  if is_flowchart_header(header) {
+    let subgraph_starts : Array[(Int, Int)] = []
+    for i, line in lines {
+      if i <= header_index {
+        continue
+      }
+      let trimmed = trim_line(line)
+      if trimmed.length() == 0 || trimmed.has_prefix("%%") {
+        continue
+      }
+      let column = line.length() - trimmed.length() + 1
+      if trimmed.has_prefix("subgraph ") {
+        subgraph_starts.push((i, column))
+        continue
+      }
+      if trimmed == "end" {
+        match subgraph_starts.pop() {
+          Some(_) => ()
+          None =>
+            return Err({
+              line: i + 1,
+              column,
+              message: "unexpected 'end' without a matching subgraph",
+            })
+        }
+        continue
+      }
+      match trailing_flowchart_arrow(trimmed) {
+        Some(arrow) =>
+          return Err({
+            line: i + 1,
+            column: line.length() + 1,
+            message: "expected a target node after '" + arrow + "'",
+          })
+        None => ()
+      }
+    }
+    match subgraph_starts.pop() {
+      Some((line, column)) =>
+        return Err({ line: line + 1, column, message: "unterminated subgraph" })
+      None => ()
+    }
+  }
+  Ok(())
+}
+
+///|
 fn parse_direction_from_header(header : String) -> Direction {
   let parts = split_ws(header)
   if parts.length() >= 2 {
@@ -765,6 +889,12 @@ fn parse_mermaid(text : String) -> MermaidDiagram {
   let header_lower = header.to_lower()
   if header_lower.has_prefix("sequencediagram") {
     Sequence(parse_sequence(lines, header_index))
+  } else if header_lower.has_prefix("mindmap") {
+    Outline(parse_mindmap(lines, header_index))
+  } else if header_lower.has_prefix("journey") {
+    Outline(parse_journey(lines, header_index))
+  } else if header_lower.has_prefix("pie") {
+    Outline(parse_pie(lines, header_index, header))
   } else if header_lower.has_prefix("timeline") {
     Timeline(parse_timeline(lines, header_index))
   } else if header_lower.has_prefix("gitgraph") {
@@ -785,5 +915,15 @@ fn parse_mermaid(text : String) -> MermaidDiagram {
   } else {
     let direction = parse_direction_from_header(header)
     Graph(parse_flowchart(lines, header_index, direction))
+  }
+}
+
+///|
+fn parse_mermaid_checked(
+  text : String,
+) -> Result[MermaidDiagram, ParseDiagnostic] {
+  match validate_mermaid(text) {
+    Ok(_) => Ok(parse_mermaid(text))
+    Err(error) => Err(error)
   }
 }

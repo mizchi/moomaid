@@ -20,6 +20,9 @@ pub struct SvgOptions {
   border : String?
   font : String?
   transparent : Bool?
+  padding : Int?
+  title : String?
+  description : String?
 } derive(Debug, Eq)
 
 ///|
@@ -52,6 +55,9 @@ fn default_render_options() -> SvgOptions {
     border: None,
     font: Some("Inter"),
     transparent: Some(false),
+    padding: Some(20),
+    title: None,
+    description: None,
   }
 }
 
@@ -94,6 +100,11 @@ fn resolve_font(options : SvgOptions) -> String {
 ///|
 fn resolve_transparent(options : SvgOptions) -> Bool {
   opt_or(options.transparent, false)
+}
+
+///|
+fn resolve_svg_padding(options : SvgOptions) -> Int {
+  opt_or(options.padding, 20)
 }
 
 ///|

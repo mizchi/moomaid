@@ -151,6 +151,105 @@ fn group_by_level(
 }
 
 ///|
+fn cross_positions(groups : Array[Array[GraphNode]]) -> Map[String, Int] {
+  let positions : Map[String, Int] = Map([])
+  for group in groups {
+    for i, node in group {
+      positions.set(node.id, i)
+    }
+  }
+  positions
+}
+
+///|
+fn neighbor_score(
+  node : GraphNode,
+  edges : Array[GraphEdge],
+  positions : Map[String, Int],
+  incoming : Bool,
+) -> (Int, Int) {
+  let mut sum = 0
+  let mut count = 0
+  for edge in edges {
+    let neighbor = if incoming && edge.to == node.id {
+      Some(edge.from)
+    } else if !incoming && edge.from == node.id {
+      Some(edge.to)
+    } else {
+      None
+    }
+    match neighbor {
+      Some(id) =>
+        if positions.contains(id) {
+          sum += positions.get_or_default(id, 0)
+          count += 1
+        }
+      None => ()
+    }
+  }
+  (sum, count)
+}
+
+///|
+fn sort_group_by_neighbors(
+  group : Array[GraphNode],
+  edges : Array[GraphEdge],
+  positions : Map[String, Int],
+  incoming : Bool,
+) -> Unit {
+  group.sort_by(fn(left, right) {
+    let (left_sum, left_count) = neighbor_score(
+      left, edges, positions, incoming,
+    )
+    let (right_sum, right_count) = neighbor_score(
+      right, edges, positions, incoming,
+    )
+    if left_count == 0 && right_count == 0 {
+      left.id.compare(right.id)
+    } else if left_count == 0 {
+      1
+    } else if right_count == 0 {
+      -1
+    } else {
+      let left_score = left_sum * right_count
+      let right_score = right_sum * left_count
+      if left_score < right_score {
+        -1
+      } else if left_score > right_score {
+        1
+      } else {
+        left.id.compare(right.id)
+      }
+    }
+  })
+}
+
+///|
+/// Orders nodes within each rank by adjacent ranks to reduce edge crossings.
+fn order_levels_by_edges(
+  nodes : Array[GraphNode],
+  edges : Array[GraphEdge],
+  levels : Map[String, Int],
+) -> Array[Array[GraphNode]] {
+  let groups = group_by_level(nodes, levels)
+  for group in groups {
+    group.sort_by(fn(left, right) { left.id.compare(right.id) })
+  }
+  let mut positions = cross_positions(groups)
+  for i = 1; i < groups.length(); i = i + 1 {
+    sort_group_by_neighbors(groups[i], edges, positions, true)
+    positions = cross_positions(groups)
+  }
+  let mut i = groups.length()
+  while i > 1 {
+    i -= 1
+    sort_group_by_neighbors(groups[i - 1], edges, positions, false)
+    positions = cross_positions(groups)
+  }
+  groups
+}
+
+///|
 fn make_flex_style(
   dir : @types.FlexDirection,
   gap : @types.Dimension,
@@ -211,16 +310,39 @@ fn layout_graph(diagram : GraphDiagram, options : Options) -> PositionedGraph {
   let padding_y = options.padding_y
   let subgraph_offset = if diagram.subgraphs.length() > 0 { 2 } else { 0 }
   let nested_subgraph_offset = max_subgraph_depth(diagram) * 2
-  let gap_main = 2.0
-  let gap_cross = 4.0
   let size_map : Map[String, (Int, Int)] = Map([])
   for n in diagram.nodes {
     size_map.set(n.id, measure_node_size(n, padding_x, padding_y))
   }
   let levels = compute_levels(diagram.nodes, diagram.edges)
-  let grouped = group_by_level(diagram.nodes, levels)
+  let grouped = order_levels_by_edges(diagram.nodes, diagram.edges, levels)
   let is_vertical = diagram.direction == Direction::TD ||
     diagram.direction == Direction::BT
+  let mut gap_main = 2.0
+  for edge in diagram.edges {
+    match edge.label {
+      Some(label) => {
+        let required_gap = if is_vertical {
+          2.0
+        } else {
+          (display_width(label) + 2).to_double()
+        }
+        if required_gap > gap_main {
+          gap_main = required_gap
+        }
+      }
+      None => ()
+    }
+  }
+  if !is_vertical {
+    for subgraph in diagram.subgraphs {
+      let required_gap = (display_width(subgraph.label) + 4).to_double()
+      if required_gap > gap_main {
+        gap_main = required_gap
+      }
+    }
+  }
+  let gap_cross = 4.0
   let main_dir : @types.FlexDirection = match diagram.direction {
     Direction::TD => @types.FlexDirection::Column
     Direction::BT => @types.FlexDirection::ColumnReverse

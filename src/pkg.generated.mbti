@@ -6,15 +6,23 @@ import {
 }
 
 // Values
+pub fn default_svg_options() -> SvgOptions
+
 pub fn experimental_render_to_svg(String, options? : SvgOptions) -> String
 
 pub fn parse(String) -> MermaidDiagram
 
+pub fn parse_checked(String) -> Result[MermaidDiagram, ParseDiagnostic]
+
 pub fn render(String, OutputFormat) -> String
+
+pub fn render_checked(String, OutputFormat) -> Result[String, ParseDiagnostic]
+
+pub fn render_svg_checked(String, options? : SvgOptions) -> Result[String, ParseDiagnostic]
 
 pub fn render_to_string(String, options? : Options) -> String
 
-pub fn svg_options_from_theme(String, font? : String, transparent? : Bool) -> SvgOptions?
+pub fn svg_options_from_theme(String, font? : String, transparent? : Bool, padding? : Int) -> SvgOptions?
 
 pub let themes : Map[String, DiagramColors]
 
@@ -115,6 +123,7 @@ pub enum MermaidDiagram {
   Timeline(TimelineDiagram)
   GitGraph(GitGraphDiagram)
   Gantt(GanttDiagram)
+  Outline(OutlineDiagram)
 } derive(Eq, @debug.Debug)
 
 pub enum NodeShape {
@@ -134,11 +143,35 @@ pub(all) struct Options {
   max_width : Int
 } derive(Eq, @debug.Debug)
 
+pub struct OutlineDiagram {
+  kind : OutlineKind
+  title : String?
+  items : Array[OutlineItem]
+} derive(Eq, @debug.Debug)
+
+pub struct OutlineItem {
+  depth : Int
+  label : String
+} derive(Eq, @debug.Debug)
+
+pub enum OutlineKind {
+  Mindmap
+  Journey
+  Pie
+} derive(Eq, @debug.Debug)
+
 pub(all) enum OutputFormat {
   Ascii
   Svg
 } derive(Eq, @debug.Debug)
 pub fn OutputFormat::parse(StringView) -> Self?
+
+pub struct ParseDiagnostic {
+  line : Int
+  column : Int
+  message : String
+} derive(Eq, @debug.Debug)
+pub fn ParseDiagnostic::display(Self) -> String
 
 type Point derive(Eq, @debug.Debug)
 
@@ -196,7 +229,16 @@ pub struct SvgOptions {
   border : String?
   font : String?
   transparent : Bool?
+  padding : Int?
+  title : String?
+  description : String?
 } derive(Eq, @debug.Debug)
+pub fn SvgOptions::with_background(Self, String) -> Self
+pub fn SvgOptions::with_description(Self, String) -> Self
+pub fn SvgOptions::with_font(Self, String) -> Self
+pub fn SvgOptions::with_padding(Self, Int) -> Self
+pub fn SvgOptions::with_title(Self, String) -> Self
+pub fn SvgOptions::with_transparent(Self) -> Self
 
 pub struct TimelineDiagram {
   title : String?

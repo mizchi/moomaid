@@ -18,6 +18,9 @@ show both the static structure and the important behavior.
 | Public APIs, types, and code-level responsibilities | `classDiagram` | Types, important fields or operations, and relationships; omit implementation detail |
 | Data ownership and cardinality | `erDiagram` | Entities, keys only when relevant, and one-to-one/one-to-many relationships |
 | A domain object's legal lifecycle | `stateDiagram-v2` | States, triggers, guards, and terminal states |
+| Architecture ideas, concerns, or a hierarchy before dependencies matter | `mindmap` | A root topic and progressively indented concepts |
+| A user's experience across product or system stages | `journey` | Sections, tasks, scores, and actors; do not use it for request messages |
+| A small, static composition of a whole | `pie` | Named shares and values; use a table instead when exact comparison matters |
 | A small number of historical or product milestones | `timeline` | Dated milestones in chronological order |
 | Planned work, dates, status, and duration | `gantt` | Tasks, schedule, and execution status; do not use for runtime behavior |
 | Branching and commits | `gitGraph` | Branches, merges, and releases; do not use it as a project schedule |

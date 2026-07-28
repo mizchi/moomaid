@@ -63,7 +63,12 @@ moon runwasm src/cmd/skill --format svg < diagram.mmd
 moon run examples/moomaid.mbtx --format ascii < diagram.mmd
 ```
 
-The only supported flag is `--format ascii|svg`; the default is `ascii`.
+`--format ascii|svg` controls the artifact and defaults to `ascii`. For SVG,
+use `--theme`, `--font`, `--padding`, `--background`, `--transparent`,
+`--title`, and `--description` to control presentation and accessibility.
+On invalid Mermaid input, the command writes a `line` and `column` diagnostic
+to standard error, leaves standard output empty, and exits with status `1`.
+Invalid command-line arguments exit with status `2`.
 After publishing, the same command is runnable by its Mooncakes coordinate:
 `moon runwasm mizchi/moomaid/cmd/skill@<version> --format svg`.
 
@@ -139,6 +144,9 @@ sequenceDiagram
 - `timeline` - Chronological event outlines
 - `gitGraph` - Branch, checkout, commit, and merge histories
 - `gantt` - Sections and task start/duration tables
+- `mindmap` - Indented architecture and idea outlines
+- `journey` - Sections and user/system journey tasks
+- `pie` - Labeled proportion outlines
 
 ## Library Usage
 

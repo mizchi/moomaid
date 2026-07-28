@@ -59,6 +59,33 @@ fn render_timeline_ascii(diagram : TimelineDiagram) -> String {
 }
 
 ///|
+fn render_outline_ascii(diagram : OutlineDiagram) -> String {
+  let kind = match diagram.kind {
+    OutlineKind::Mindmap => "Mindmap"
+    OutlineKind::Journey => "Journey"
+    OutlineKind::Pie => "Pie"
+  }
+  let sb = StringBuilder::new()
+  match diagram.title {
+    Some(title) => sb.write_view("\{kind}: \{title}")
+    None => sb.write_view(kind)
+  }
+  for item in diagram.items {
+    sb.write_string("\n")
+    for _ in 0..<item.depth {
+      sb.write_string("  ")
+    }
+    sb.write_view("• \{item.label}")
+  }
+  sb.to_string()
+}
+
+///|
+fn render_outline_svg(diagram : OutlineDiagram, options : SvgOptions) -> String {
+  render_text_svg(render_outline_ascii(diagram), options)
+}
+
+///|
 /// Renders gitGraph events while retaining their branch context.
 fn render_git_graph_ascii(diagram : GitGraphDiagram) -> String {
   let sb = StringBuilder::new()
@@ -111,14 +138,23 @@ fn render_text_svg(text : String, options : SvgOptions) -> String {
   for line in lines {
     columns = max_int(columns, display_width(line))
   }
-  let colors = build_colors(options)
+  let colors = escape_svg_colors(build_colors(options))
   let font = resolve_font(options)
   let transparent = resolve_transparent(options)
-  let pad = 20.0
+  let pad = resolve_svg_padding(options).to_double()
   let width_px = columns.to_double() * cell_px + pad * 2.0
   let height_px = lines.length().to_double() * cell_py + pad * 2.0
   let sb = StringBuilder::new()
-  sb.write_view(svg_open(width_px, height_px, transparent, colors.bg))
+  sb.write_view(
+    svg_open(
+      width_px,
+      height_px,
+      transparent,
+      colors.bg,
+      options.title,
+      options.description,
+    ),
+  )
   let mut y = pad + cell_py * 0.8
   for line in lines {
     sb.write_view(
