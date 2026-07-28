@@ -27,7 +27,10 @@ fn parse_direction_from_header(header : String) -> Direction {
 }
 
 ///|
-fn parse_node_token(token : String, default_shape : NodeShape) -> GraphNode {
+fn parse_node_token_without_decision(
+  token : String,
+  default_shape : NodeShape,
+) -> GraphNode {
   let t = trim_line(token)
   match split_once(t, "[") {
     Some((id_raw, rest)) =>
@@ -87,6 +90,24 @@ fn parse_node_token(token : String, default_shape : NodeShape) -> GraphNode {
 }
 
 ///|
+/// Parses flowchart decision nodes written as `id{label}`.
+fn parse_node_token(token : String, default_shape : NodeShape) -> GraphNode {
+  let text = trim_line(token)
+  match split_once(text, "{") {
+    Some((id_raw, rest)) =>
+      match split_once(rest, "}") {
+        Some((label_raw, _)) => {
+          let id = trim_line(id_raw)
+          let label = strip_quotes(trim_line(label_raw))
+          { id, label, shape: NodeShape::Diamond, sections: [[label]] }
+        }
+        None => parse_node_token_without_decision(text, default_shape)
+      }
+    None => parse_node_token_without_decision(text, default_shape)
+  }
+}
+
+///|
 fn upsert_node(map : Map[String, GraphNode], node : GraphNode) -> Unit {
   match map.get(node.id) {
     None => map.set(node.id, node)
@@ -99,7 +120,12 @@ fn upsert_node(map : Map[String, GraphNode], node : GraphNode) -> Unit {
       if existing.label == existing.id && node.label != existing.id {
         label = node.label
       }
-      let sections = if node.sections.length() > 0 {
+      let sections = if (
+          existing.label != existing.id || existing.sections.length() > 1
+        ) &&
+        node.label == node.id {
+        existing.sections
+      } else if node.sections.length() > 0 {
         node.sections
       } else {
         existing.sections
@@ -449,12 +475,17 @@ fn parse_er(lines : Array[String], header_index : Int) -> GraphDiagram {
       let parts = split_ws(left)
       if parts.length() >= 3 {
         let from = parts[0]
+        let cardinality = parts[1]
         let to = parts[2]
         let left_node = parse_node_token(from, NodeShape::Rect)
         let right_node = parse_node_token(to, NodeShape::Rect)
         upsert_node(nodes, left_node)
         upsert_node(nodes, right_node)
-        edges.push({ from, to, label: label_opt })
+        let label = match label_opt {
+          Some(text) => Some("\{cardinality} \{text}")
+          None => Some(cardinality)
+        }
+        edges.push({ from, to, label })
       }
       continue
     }
@@ -632,12 +663,21 @@ fn parse_sequence(lines : Array[String], header_index : Int) -> SequenceDiagram 
       has_extended_syntax = true
       continue
     }
-    if lower.has_prefix("else") || lower.has_prefix("and ") {
+    if lower.has_prefix("else") {
       let label = match split_once(t, " ") {
         Some((_, rest)) => trim_line(rest)
         None => ""
       }
       events.push(SequenceEvent::BlockElse(label))
+      has_extended_syntax = true
+      continue
+    }
+    if lower.has_prefix("and ") {
+      let label = match split_once(t, " ") {
+        Some((_, rest)) => trim_line(rest)
+        None => ""
+      }
+      events.push(SequenceEvent::BlockAnd(label))
       has_extended_syntax = true
       continue
     }

@@ -102,7 +102,17 @@ fn render_graph_svg(diagram : GraphDiagram, options : SvgOptions) -> String {
   let font = resolve_font(options)
   let transparent = resolve_transparent(options)
   let pad = 20.0
-  let width_px = to_px_x(layout.width) + pad * 2
+  let mut render_width = layout.width
+  for edge in layout.edges {
+    match edge.edge.label {
+      Some(label) => {
+        let label_x = (edge.start.x + edge.end.x) / 2
+        render_width = max_int(render_width, label_x + display_width(label) + 1)
+      }
+      None => ()
+    }
+  }
+  let width_px = to_px_x(render_width) + pad * 2
   let height_px = to_px_y(layout.height) + pad * 2
   let font_size = cell_py * 0.8
   let sb = StringBuilder::new()
@@ -111,7 +121,7 @@ fn render_graph_svg(diagram : GraphDiagram, options : SvgOptions) -> String {
   sb.write_view("<g transform=\"translate(\{pad},\{pad})\">\n")
   sb.write_view("<g class=\"subgraphs\">\n")
   for subgraph in diagram.subgraphs {
-    match subgraph_box(subgraph, layout.nodes) {
+    match subgraph_box(subgraph, diagram.subgraphs, layout.nodes) {
       Some(box) => {
         let x = to_px_x(box.x)
         let y = to_px_y(box.y)
@@ -173,15 +183,24 @@ fn render_graph_svg(diagram : GraphDiagram, options : SvgOptions) -> String {
         sb.write_view(svg_state_circle(cx, cy, r, colors.accent, false))
       }
       _ => {
-        let rx = match pnode.node.shape {
-          NodeShape::Rounded => 12
-          NodeShape::Circle => (if w < h { w } else { h }).to_int() / 2
-          _ => 4
+        if pnode.node.shape == NodeShape::Diamond {
+          sb.write_view(
+            "<polygon points=\"\{x + w / 2.0},\{y} \{x + w},\{y + h / 2.0} \{x + w / 2.0},\{y + h} \{x},\{y + h / 2.0}\" fill=\"\{colors.surface}\" stroke=\"\{colors.border}\" stroke-width=\"1.2\" />\n",
+          )
+        } else {
+          let rx = match pnode.node.shape {
+            NodeShape::Rounded => 12
+            NodeShape::Circle => (if w < h { w } else { h }).to_int() / 2
+            _ => 4
+          }
+          sb.write_view(
+            "<rect x=\"\{x}\" y=\"\{y}\" width=\"\{w}\" height=\"\{h}\" rx=\"\{rx}\" ry=\"\{rx}\" fill=\"\{colors.surface}\" stroke=\"\{colors.border}\" stroke-width=\"1.2\" />\n",
+          )
         }
-        sb.write_view(
-          "<rect x=\"\{x}\" y=\"\{y}\" width=\"\{w}\" height=\"\{h}\" rx=\"\{rx}\" ry=\"\{rx}\" fill=\"\{colors.surface}\" stroke=\"\{colors.border}\" stroke-width=\"1.2\" />\n",
-        )
         let mut ty = y + ascii_opts.padding_y.to_double() * cell_py + font_size
+        if pnode.node.shape == NodeShape::Diamond {
+          ty += cell_py
+        }
         let tx = x + ascii_opts.padding_x.to_double() * cell_px
         let mut section_index = 0
         for section in pnode.node.sections {

@@ -23,8 +23,12 @@ fn measure_node_size(
       if section_count > 1 {
         content_h += section_count - 1
       }
-      let w = content_w + padding_x * 2
-      let h = content_h + padding_y * 2
+      let mut w = content_w + padding_x * 2
+      let mut h = content_h + padding_y * 2
+      if node.shape == NodeShape::Diamond {
+        w += 2
+        h += 2
+      }
       (w, h)
     }
   }
@@ -176,10 +180,37 @@ fn make_leaf_style(w : Int, h : Int) -> @style.Style {
 }
 
 ///|
+/// Returns the deepest subgraph containing a node.
+fn node_subgraph_depth(diagram : GraphDiagram, node_id : String) -> Int {
+  let mut depth = 0
+  for subgraph in diagram.subgraphs {
+    for member_id in subgraph.node_ids {
+      if member_id == node_id && subgraph.depth + 1 > depth {
+        depth = subgraph.depth + 1
+      }
+    }
+  }
+  depth
+}
+
+///|
+/// Returns the maximum nested subgraph depth in a diagram.
+fn max_subgraph_depth(diagram : GraphDiagram) -> Int {
+  let mut depth = 0
+  for subgraph in diagram.subgraphs {
+    if subgraph.depth + 1 > depth {
+      depth = subgraph.depth + 1
+    }
+  }
+  depth
+}
+
+///|
 fn layout_graph(diagram : GraphDiagram, options : Options) -> PositionedGraph {
   let padding_x = options.padding_x
   let padding_y = options.padding_y
   let subgraph_offset = if diagram.subgraphs.length() > 0 { 2 } else { 0 }
+  let nested_subgraph_offset = max_subgraph_depth(diagram) * 2
   let gap_main = 2.0
   let gap_cross = 4.0
   let size_map : Map[String, (Int, Int)] = Map([])
@@ -250,14 +281,18 @@ fn layout_graph(diagram : GraphDiagram, options : Options) -> PositionedGraph {
   for level_layout in crater_layout.children {
     for node_layout in level_layout.children {
       layout_map.set(node_layout.id, {
-        x: (level_layout.x + node_layout.x).to_int() + subgraph_offset,
+        x: (level_layout.x + node_layout.x).to_int() +
+        subgraph_offset +
+        node_subgraph_depth(diagram, node_layout.id) * 2,
         y: (level_layout.y + node_layout.y).to_int() + subgraph_offset,
         width: node_layout.width.to_int(),
         height: node_layout.height.to_int(),
       })
     }
   }
-  let total_w = crater_layout.width.to_int() + subgraph_offset * 2
+  let total_w = crater_layout.width.to_int() +
+    subgraph_offset * 2 +
+    nested_subgraph_offset
   let total_h = crater_layout.height.to_int() + subgraph_offset * 2
   let nodes : Array[PositionedNode] = []
   for n in diagram.nodes {
@@ -309,6 +344,7 @@ fn layout_graph(diagram : GraphDiagram, options : Options) -> PositionedGraph {
 /// Calculates the bounding box for a parsed subgraph from positioned members.
 fn subgraph_box(
   subgraph : GraphSubgraph,
+  subgraphs : Array[GraphSubgraph],
   nodes : Array[PositionedNode],
 ) -> LayoutBox? {
   let mut found = false
@@ -352,11 +388,39 @@ fn subgraph_box(
   } else {
     let x = if min_x > 0 { min_x - 1 } else { 0 }
     let y = if min_y > 0 { min_y - 1 } else { 0 }
+    let mut right = max_x + 1
+    let mut bottom = max_y + 1
+    for child in subgraphs {
+      if child.depth <= subgraph.depth {
+        continue
+      }
+      let mut overlaps = false
+      for child_id in child.node_ids {
+        for parent_id in subgraph.node_ids {
+          if child_id == parent_id {
+            overlaps = true
+          }
+        }
+      }
+      if overlaps {
+        match subgraph_box(child, subgraphs, nodes) {
+          Some(child_box) => {
+            if child_box.x + child_box.width + 1 > right {
+              right = child_box.x + child_box.width + 1
+            }
+            if child_box.y + child_box.height + 1 > bottom {
+              bottom = child_box.y + child_box.height + 1
+            }
+          }
+          None => ()
+        }
+      }
+    }
     Some({
       x,
       y,
-      width: max_int(max_x - x + 1, display_width(subgraph.label) + 4),
-      height: max_y - y + 1,
+      width: max_int(right - x, display_width(subgraph.label) + 4),
+      height: bottom - y,
     })
   }
 }

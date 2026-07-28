@@ -34,6 +34,7 @@ fn render_extended_sequence_ascii(diagram : SequenceDiagram) -> String {
       SequenceEvent::BlockStart(kind, label) =>
         sb.write_view("  [\{kind} \{label}]")
       SequenceEvent::BlockElse(label) => sb.write_view("  [else \{label}]")
+      SequenceEvent::BlockAnd(label) => sb.write_view("  [and \{label}]")
       SequenceEvent::BlockEnd => sb.write_view("  [end]")
     }
   }

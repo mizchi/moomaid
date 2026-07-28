@@ -19,6 +19,7 @@ pub enum NodeShape {
   Rect
   Rounded
   Circle
+  Diamond
   StateStart
   StateEnd
 } derive(Debug, Eq)
@@ -43,6 +44,7 @@ pub struct GraphSubgraph {
   id : String
   label : String
   node_ids : Array[String]
+  depth : Int
 } derive(Debug, Eq)
 
 ///|
@@ -83,6 +85,7 @@ pub enum SequenceEvent {
   Deactivate(String)
   BlockStart(String, String)
   BlockElse(String)
+  BlockAnd(String)
   BlockEnd
 } derive(Debug, Eq)
 

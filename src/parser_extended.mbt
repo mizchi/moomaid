@@ -9,9 +9,9 @@ fn directive_value(text : String) -> String {
 
 ///|
 /// Parses a flowchart subgraph declaration.
-fn parse_subgraph_header(text : String) -> GraphSubgraph {
+fn parse_subgraph_header(text : String, depth : Int) -> GraphSubgraph {
   let node = parse_node_token(directive_value(text), NodeShape::Rect)
-  { id: node.id, label: node.label, node_ids: [] }
+  { id: node.id, label: node.label, node_ids: [], depth }
 }
 
 ///|
@@ -58,7 +58,7 @@ fn parse_flowchart_with_subgraphs(
       continue
     }
     if text.has_prefix("subgraph ") {
-      stack.push(parse_subgraph_header(text))
+      stack.push(parse_subgraph_header(text, stack.length()))
       continue
     }
     if text == "end" {
@@ -76,7 +76,12 @@ fn parse_flowchart_with_subgraphs(
         for node_id in node_ids {
           members.push(node_id)
         }
-        stack[index] = { id: group.id, label: group.label, node_ids: members }
+        stack[index] = {
+          id: group.id,
+          label: group.label,
+          node_ids: members,
+          depth: group.depth,
+        }
       }
     }
   }
@@ -135,12 +140,34 @@ fn parse_timeline(lines : Array[String], header_index : Int) -> TimelineDiagram 
 }
 
 ///|
+/// Extracts one quoted or unquoted gitGraph command attribute.
+fn parse_git_attribute(text : String, key : String) -> String? {
+  match split_once(text, key + ":") {
+    Some((_, raw_value)) => {
+      let value = trim_line(raw_value)
+      if value.has_prefix("\"") {
+        let quoted = drop_first_char(value)
+        match split_once(quoted, "\"") {
+          Some((content, _)) => Some(content)
+          None => Some(quoted)
+        }
+      } else {
+        let parts = split_ws(value)
+        if parts.length() > 0 {
+          Some(parts[0])
+        } else {
+          None
+        }
+      }
+    }
+    None => None
+  }
+}
+
+///|
 /// Extracts a Mermaid gitGraph commit identifier.
 fn parse_git_commit_id(text : String) -> String {
-  match split_once(text, "id:") {
-    Some((_, value)) => strip_quotes(trim_line(value))
-    None => "commit"
-  }
+  parse_git_attribute(text, "id").unwrap_or("commit")
 }
 
 ///|
@@ -189,6 +216,43 @@ fn gantt_fields(text : String) -> Array[String] {
 }
 
 ///|
+/// Returns whether a Gantt metadata field is a Mermaid task status.
+fn is_gantt_status(value : String) -> Bool {
+  let lower = value.to_lower()
+  lower == "done" ||
+  lower == "active" ||
+  lower == "crit" ||
+  lower == "milestone"
+}
+
+///|
+/// Builds a task from optional status/id metadata followed by start and duration.
+fn parse_gantt_task(
+  section : String?,
+  name : String,
+  fields : Array[String],
+) -> GanttTask? {
+  let field_count = fields.length()
+  if field_count < 2 {
+    return None
+  }
+  let metadata_count = field_count - 2
+  let mut status : String? = None
+  for index in 0..<metadata_count {
+    if is_gantt_status(fields[index]) {
+      status = Some(fields[index])
+    }
+  }
+  Some({
+    section,
+    name: trim_line(name),
+    status,
+    start: fields[field_count - 2],
+    duration: fields[field_count - 1],
+  })
+}
+
+///|
 /// Parses a useful core subset of Mermaid Gantt syntax.
 fn parse_gantt(lines : Array[String], header_index : Int) -> GanttDiagram {
   let mut title : String? = None
@@ -219,22 +283,9 @@ fn parse_gantt(lines : Array[String], header_index : Int) -> GanttDiagram {
     match split_once(text, ":") {
       Some((name, raw_fields)) => {
         let fields = gantt_fields(raw_fields)
-        if fields.length() >= 4 {
-          tasks.push({
-            section,
-            name: trim_line(name),
-            status: Some(fields[0]),
-            start: fields[2],
-            duration: fields[3],
-          })
-        } else if fields.length() >= 2 {
-          tasks.push({
-            section,
-            name: trim_line(name),
-            status: None,
-            start: fields[0],
-            duration: fields[1],
-          })
+        match parse_gantt_task(section, name, fields) {
+          Some(task) => tasks.push(task)
+          None => ()
         }
       }
       None => ()

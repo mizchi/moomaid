@@ -241,6 +241,54 @@ fn Canvas::draw_rounded_box(
 }
 
 ///|
+/// Draws a diamond outline for Mermaid decision nodes.
+fn Canvas::draw_diamond_box(
+  self : Canvas,
+  x : Int,
+  y : Int,
+  w : Int,
+  h : Int,
+  use_ascii : Bool,
+) -> Unit {
+  if w < 5 || h < 5 {
+    self.draw_rounded_box(x, y, w, h, use_ascii)
+    return
+  }
+  let mid_y = h / 2
+  let mid_x = x + w / 2
+  let top = if use_ascii { '^' } else { '◇' }
+  let bottom = if use_ascii { 'v' } else { '◇' }
+  let upper_left = if use_ascii { '/' } else { '╱' }
+  let upper_right = if use_ascii { '\\' } else { '╲' }
+  let lower_left = if use_ascii { '\\' } else { '╲' }
+  let lower_right = if use_ascii { '/' } else { '╱' }
+  let side_left = if use_ascii { '<' } else { '‹' }
+  let side_right = if use_ascii { '>' } else { '›' }
+  for row in 0..<h {
+    if row == 0 {
+      self.set(mid_x, y + row, top)
+    } else if row == h - 1 {
+      self.set(mid_x, y + row, bottom)
+    } else {
+      let distance = if row < mid_y { mid_y - row } else { row - mid_y }
+      let half_width = w / 2 * (mid_y - distance) / mid_y
+      let left = mid_x - half_width
+      let right = mid_x + half_width
+      if row < mid_y {
+        self.set(left, y + row, upper_left)
+        self.set(right, y + row, upper_right)
+      } else if row > mid_y {
+        self.set(left, y + row, lower_left)
+        self.set(right, y + row, lower_right)
+      } else {
+        self.set(left, y + row, side_left)
+        self.set(right, y + row, side_right)
+      }
+    }
+  }
+}
+
+///|
 fn Canvas::draw_hline(
   self : Canvas,
   x1 : Int,
@@ -422,10 +470,20 @@ fn Canvas::render(self : Canvas) -> String {
 ///|
 fn render_graph_canvas(diagram : GraphDiagram, options : Options) -> Canvas {
   let layout = layout_graph(diagram, options)
-  let canvas = Canvas::new(layout.width + 2, layout.height + 2)
+  let mut canvas_width = layout.width + 2
+  for edge in layout.edges {
+    match edge.edge.label {
+      Some(label) => {
+        let label_x = (edge.start.x + edge.end.x) / 2
+        canvas_width = max_int(canvas_width, label_x + display_width(label) + 1)
+      }
+      None => ()
+    }
+  }
+  let canvas = Canvas::new(canvas_width, layout.height + 2)
   // Pass 0: draw subgraph containers behind edges and nodes.
   for subgraph in diagram.subgraphs {
-    match subgraph_box(subgraph, layout.nodes) {
+    match subgraph_box(subgraph, diagram.subgraphs, layout.nodes) {
       Some(box) => {
         canvas.draw_rounded_box(
           box.x,
@@ -488,10 +546,14 @@ fn render_graph_canvas(diagram : GraphDiagram, options : Options) -> Canvas {
       _ => {
         let draw_fn = match node.node.shape {
           NodeShape::Rounded => Canvas::draw_rounded_box
+          NodeShape::Diamond => Canvas::draw_diamond_box
           _ => Canvas::draw_box
         }
         draw_fn(canvas, b.x, b.y, b.width, b.height, options.use_ascii)
         let mut y = b.y + options.padding_y
+        if node.node.shape == NodeShape::Diamond {
+          y += 1
+        }
         let mut section_index = 0
         for section in node.node.sections {
           for line in section {
@@ -509,7 +571,7 @@ fn render_graph_canvas(diagram : GraphDiagram, options : Options) -> Canvas {
   }
   // Pass 3: restore container labels over connectors crossing their borders.
   for subgraph in diagram.subgraphs {
-    match subgraph_box(subgraph, layout.nodes) {
+    match subgraph_box(subgraph, diagram.subgraphs, layout.nodes) {
       Some(box) => canvas.draw_text(box.x + 2, box.y, subgraph.label)
       None => ()
     }

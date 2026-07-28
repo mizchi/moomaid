@@ -91,3 +91,70 @@ test "render extended diagram types as svg" {
     true,
   )
 }
+
+///|
+/// Gantt task identifiers and statuses are metadata, not timeline values.
+test "gantt keeps start and duration with optional identifiers" {
+  let rendered = render_to_string(
+    "gantt\n  section Tasks\n  WithId :task_id, 2026-01-02, 2d\n  Done :done, done_id, 2026-01-04, 1d\n",
+  )
+  assert_eq(rendered.contains("WithId | 2026-01-02 | 2d"), true)
+  assert_eq(rendered.contains("[done] Done | 2026-01-04 | 1d"), true)
+}
+
+///|
+/// gitGraph attributes do not become part of the visible commit identifier.
+test "git graph extracts quoted commit identifiers" {
+  let rendered = render_to_string(
+    "gitGraph\n  commit id: \"initial\" type: HIGHLIGHT\n  branch feature\n  checkout feature\n  commit id: \"work\" tag: \"v1\"\n",
+  )
+  assert_eq(rendered.contains("main ● initial"), true)
+  assert_eq(rendered.contains("feature ● work"), true)
+  assert_eq(rendered.contains("HIGHLIGHT"), false)
+}
+
+///|
+/// Decision node syntax creates one diamond node instead of a literal identifier.
+test "flowchart decision node uses braces as a shape" {
+  let rendered = render_to_string(
+    "flowchart LR\n  A[Start] --> B{Ready}\n  B --> C[Done]\n",
+  )
+  assert_eq(rendered.contains("B{Ready}"), false)
+  assert_eq(rendered.contains("Ready"), true)
+  assert_eq(rendered.contains("◇"), true)
+}
+
+///|
+/// Nested subgraphs keep a distinct visible container for each level.
+test "nested subgraphs render separate frames" {
+  let rendered = render_to_string(
+    "flowchart TD\n  subgraph outer[Outer]\n    A --> B\n    subgraph inner[Inner]\n      B --> C\n    end\n  end\n",
+  )
+  assert_eq(rendered.contains("╭─Inner─╮"), true)
+}
+
+///|
+/// Parallel sequence branches keep their Mermaid `and` label.
+test "sequence parallel branches render and" {
+  let rendered = render_to_string(
+    "sequenceDiagram\n  par left\n    A->>B: One\n  and right\n    B->>A: Two\n  end\n",
+  )
+  assert_eq(rendered.contains("[and right]"), true)
+}
+
+///|
+/// Class members remain visible in the body section of class boxes.
+test "class diagram renders members" {
+  let rendered = render_to_string(
+    "classDiagram\n  class User {\n    +String name\n    +login()\n  }\n  User --> Session\n",
+  )
+  assert_eq(rendered.contains("+String name"), true)
+  assert_eq(rendered.contains("+login()"), true)
+}
+
+///|
+/// ER cardinality remains visible next to the relationship label.
+test "er diagram renders cardinality" {
+  let rendered = render_to_string("erDiagram\n  USER ||--o{ ORDER : places\n")
+  assert_eq(rendered.contains("||--o{"), true)
+}
