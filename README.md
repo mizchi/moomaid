@@ -67,6 +67,14 @@ The only supported flag is `--format ascii|svg`; the default is `ascii`.
 After publishing, the same command is runnable by its Mooncakes coordinate:
 `moon runwasm mizchi/moomaid/cmd/skill@<version> --format svg`.
 
+## Diagramming guidance for agents
+
+[`skills/moomaid-diagramming`](skills/moomaid-diagramming/SKILL.md) is an
+agent skill for choosing a Mermaid diagram when explaining code or
+architecture. It covers component boundaries, runtime requests, type and data
+models, lifecycles, timelines, plans, and Git history, and includes rendering
+and presentation checks.
+
 ## Diagram Types
 
 ### Flowchart (`graph LR` / `graph TD`)

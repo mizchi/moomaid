@@ -1,0 +1,4 @@
+interface:
+  display_name: "Moomaid Diagramming"
+  short_description: "Choose Mermaid diagrams for code and architecture explanations"
+  default_prompt: "Use $moomaid-diagramming to explain this codebase with the right Mermaid diagrams."
