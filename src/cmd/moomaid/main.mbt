@@ -118,7 +118,7 @@ fn render(text : String, mode : OutputMode, width : Int) -> Unit {
       }
       match commands {
         Some(cmds) => {
-          let sb = StringBuilder::new()
+          let sb = StringBuilder()
           for cmd in cmds {
             sb.write_string(cmd)
           }
@@ -142,7 +142,7 @@ fn render(text : String, mode : OutputMode, width : Int) -> Unit {
 
 ///|
 fn render_html_single(text : String) -> Unit {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   sb.write_string(
     "<!DOCTYPE html>\n<html><head><meta charset=\"utf-8\"><title>Moomaid</title>\n",
   )
@@ -198,7 +198,7 @@ fn render_html_demo() -> Unit {
     #|graph LR
     #|  Input --> Process --> Output
     #|
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   sb.write_string(
     "<!DOCTYPE html>\n<html><head><meta charset=\"utf-8\"><title>Mermaid SVG Preview</title>\n",
   )

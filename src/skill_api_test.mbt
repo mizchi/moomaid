@@ -1,8 +1,8 @@
 ///|
 test "skill rendering API selects the requested format" {
   let source = "flowchart TD\n  A --> B\n"
-  let ascii = render(source, OutputFormat::Ascii)
-  let svg = render(source, OutputFormat::Svg)
+  let ascii = @moomaid.render(source, @moomaid.OutputFormat::Ascii)
+  let svg = @moomaid.render(source, @moomaid.OutputFormat::Svg)
   if ascii.length() == 0 {
     fail("expected ASCII output")
   }
@@ -16,15 +16,15 @@ test "skill rendering API selects the requested format" {
 
 ///|
 test "skill output formats have a stable textual API" {
-  match OutputFormat::parse("ascii") {
-    Some(OutputFormat::Ascii) => ()
+  match @moomaid.OutputFormat::parse("ascii") {
+    Some(@moomaid.OutputFormat::Ascii) => ()
     _ => fail("expected ASCII format")
   }
-  match OutputFormat::parse("svg") {
-    Some(OutputFormat::Svg) => ()
+  match @moomaid.OutputFormat::parse("svg") {
+    Some(@moomaid.OutputFormat::Svg) => ()
     _ => fail("expected SVG format")
   }
-  match OutputFormat::parse("html") {
+  match @moomaid.OutputFormat::parse("html") {
     None => ()
     _ => fail("expected an unknown format to be rejected")
   }

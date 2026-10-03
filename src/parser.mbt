@@ -126,7 +126,7 @@ fn validate_mermaid(text : String) -> Result[Unit, ParseDiagnostic] {
     }
     match subgraph_starts.pop() {
       Some((line, column)) =>
-        return Err({ line: line + 1, column, message: "unterminated subgraph" })
+        return Err({ line: line + 1, column, message: "unterminated subgraph", })
       None => ()
     }
   }
@@ -163,12 +163,12 @@ fn parse_node_token_without_decision(
           let id = trim_line(id_raw)
           let label = strip_quotes(trim_line(label_raw))
           let sections = [[label]]
-          { id, label, shape: NodeShape::Rect, sections }
+          { id, label, shape: NodeShape::Rect, sections, }
         }
         None => {
           let id = trim_line(id_raw)
           let sections = [[id]]
-          { id, label: id, shape: NodeShape::Rect, sections }
+          { id, label: id, shape: NodeShape::Rect, sections, }
         }
       }
     None =>
@@ -179,12 +179,12 @@ fn parse_node_token_without_decision(
               let id = trim_line(id_raw)
               let label = trim_line(label_raw)
               let sections = [[label]]
-              { id, label, shape: NodeShape::Circle, sections }
+              { id, label, shape: NodeShape::Circle, sections, }
             }
             None => {
               let id = trim_line(id_raw)
               let sections = [[id]]
-              { id, label: id, shape: NodeShape::Circle, sections }
+              { id, label: id, shape: NodeShape::Circle, sections, }
             }
           }
         None =>
@@ -195,18 +195,18 @@ fn parse_node_token_without_decision(
                   let id = trim_line(id_raw)
                   let label = trim_line(label_raw)
                   let sections = [[label]]
-                  { id, label, shape: NodeShape::Rounded, sections }
+                  { id, label, shape: NodeShape::Rounded, sections, }
                 }
                 None => {
                   let id = trim_line(id_raw)
                   let sections = [[id]]
-                  { id, label: id, shape: NodeShape::Rounded, sections }
+                  { id, label: id, shape: NodeShape::Rounded, sections, }
                 }
               }
             None => {
               let id = trim_line(t)
               let sections = [[id]]
-              { id, label: id, shape: default_shape, sections }
+              { id, label: id, shape: default_shape, sections, }
             }
           }
       }
@@ -223,7 +223,7 @@ fn parse_node_token(token : String, default_shape : NodeShape) -> GraphNode {
         Some((label_raw, _)) => {
           let id = trim_line(id_raw)
           let label = strip_quotes(trim_line(label_raw))
-          { id, label, shape: NodeShape::Diamond, sections: [[label]] }
+          { id, label, shape: NodeShape::Diamond, sections: [[label]], }
         }
         None => parse_node_token_without_decision(text, default_shape)
       }
@@ -254,7 +254,7 @@ fn upsert_node(map : Map[String, GraphNode], node : GraphNode) -> Unit {
       } else {
         existing.sections
       }
-      map.set(node.id, { id: existing.id, label, shape, sections })
+      map.set(node.id, { id: existing.id, label, shape, sections, })
     }
   }
 }
@@ -302,7 +302,7 @@ fn parse_edge_chain(
       upsert_node(nodes, node)
       match prev_node {
         Some(prev) =>
-          edges.push({ from: prev.id, to: node.id, label: prev_label })
+          edges.push({ from: prev.id, to: node.id, label: prev_label, })
         None => ()
       }
       break
@@ -317,7 +317,7 @@ fn parse_edge_chain(
         upsert_node(nodes, node)
         match prev_node {
           Some(prev) =>
-            edges.push({ from: prev.id, to: node.id, label: prev_label })
+            edges.push({ from: prev.id, to: node.id, label: prev_label, })
           None => ()
         }
         let (right_token, label) = parse_edge_label_and_target(right_raw)
@@ -421,7 +421,7 @@ fn parse_state(
         let id = trim_line(id_raw)
         let label = trim_line(label_raw)
         let sections = [[label]]
-        upsert_node(nodes, { id, label, shape: NodeShape::Rounded, sections })
+        upsert_node(nodes, { id, label, shape: NodeShape::Rounded, sections, })
         continue
       }
       None => ()
@@ -441,20 +441,20 @@ fn parse_state(
           let left_node = if left_token == "[*]" {
             start_counter += 1
             let id = "_state_start_\{start_counter}"
-            { id, label: "", shape: NodeShape::StateStart, sections: [[""]] }
+            { id, label: "", shape: NodeShape::StateStart, sections: [[""]], }
           } else {
             parse_node_token(left_token, NodeShape::Rounded)
           }
           let right_node = if right_token == "[*]" {
             end_counter += 1
             let id = "_state_end_\{end_counter}"
-            { id, label: "", shape: NodeShape::StateEnd, sections: [[""]] }
+            { id, label: "", shape: NodeShape::StateEnd, sections: [[""]], }
           } else {
             parse_node_token(right_token, NodeShape::Rounded)
           }
           upsert_node(nodes, left_node)
           upsert_node(nodes, right_node)
-          edges.push({ from: left_node.id, to: right_node.id, label })
+          edges.push({ from: left_node.id, to: right_node.id, label, })
           ()
         }
         None => ()
@@ -502,7 +502,7 @@ fn parse_class(lines : Array[String], header_index : Int) -> GraphDiagram {
       if parts.length() >= 2 {
         let id = parts[1]
         let sections = [[id], []]
-        upsert_node(nodes, { id, label: id, shape: NodeShape::Rect, sections })
+        upsert_node(nodes, { id, label: id, shape: NodeShape::Rect, sections, })
         if t.contains("{") {
           current_class = Some(id)
         }
@@ -525,7 +525,7 @@ fn parse_class(lines : Array[String], header_index : Int) -> GraphDiagram {
           sections.push([])
         }
         sections[1].push(member_line)
-        nodes.set(id, { id, label: node.label, shape: node.shape, sections })
+        nodes.set(id, { id, label: node.label, shape: node.shape, sections, })
         continue
       }
       None => ()
@@ -547,7 +547,7 @@ fn parse_class(lines : Array[String], header_index : Int) -> GraphDiagram {
           sections.push([])
         }
         sections[1].push(member_line)
-        nodes.set(id, { id, label: node.label, shape: node.shape, sections })
+        nodes.set(id, { id, label: node.label, shape: node.shape, sections, })
         continue
       }
       None => ()
@@ -560,7 +560,7 @@ fn parse_class(lines : Array[String], header_index : Int) -> GraphDiagram {
       let right = parse_node_token(to, NodeShape::Rect)
       upsert_node(nodes, left)
       upsert_node(nodes, right)
-      edges.push({ from, to, label: None })
+      edges.push({ from, to, label: None, })
       continue
     }
   }
@@ -609,7 +609,7 @@ fn parse_er(lines : Array[String], header_index : Int) -> GraphDiagram {
           Some(text) => Some("\{cardinality} \{text}")
           None => Some(cardinality)
         }
-        edges.push({ from, to, label })
+        edges.push({ from, to, label, })
       }
       continue
     }
@@ -618,7 +618,7 @@ fn parse_er(lines : Array[String], header_index : Int) -> GraphDiagram {
       if parts.length() >= 1 {
         let id = parts[0]
         let sections = [[id], []]
-        upsert_node(nodes, { id, label: id, shape: NodeShape::Rect, sections })
+        upsert_node(nodes, { id, label: id, shape: NodeShape::Rect, sections, })
         current_entity = Some(id)
       }
       continue
@@ -639,7 +639,7 @@ fn parse_er(lines : Array[String], header_index : Int) -> GraphDiagram {
           sections.push([])
         }
         sections[1].push(attr_line)
-        nodes.set(id, { id, label: node.label, shape: node.shape, sections })
+        nodes.set(id, { id, label: node.label, shape: node.shape, sections, })
         continue
       }
       None => ()
@@ -664,12 +664,12 @@ fn ensure_actor(
 ) -> Unit {
   match map.get(id) {
     None => {
-      map.set(id, { id, label: id, kind })
+      map.set(id, { id, label: id, kind, })
       ()
     }
     Some(existing) => {
       if existing.kind == ActorKind::Participant && kind == ActorKind::Actor {
-        map.set(id, { id, label: existing.label, kind })
+        map.set(id, { id, label: existing.label, kind, })
       }
       ()
     }
@@ -684,7 +684,7 @@ fn define_actor(
   label : String,
   kind : ActorKind,
 ) -> Unit {
-  map.set(id, { id, label, kind })
+  map.set(id, { id, label, kind, })
 }
 
 ///|
@@ -858,7 +858,7 @@ fn parse_sequence(lines : Array[String], header_index : Int) -> SequenceDiagram 
           }
           ensure_actor(actors, from, ActorKind::Participant)
           ensure_actor(actors, to_id, ActorKind::Participant)
-          let message = { from, to: to_id, text, dashed }
+          let message = { from, to: to_id, text, dashed, }
           messages.push(message)
           events.push(SequenceEvent::Message(message))
           match activation {
@@ -879,7 +879,7 @@ fn parse_sequence(lines : Array[String], header_index : Int) -> SequenceDiagram 
     }
   }
   let actors_array = Array::from_iter(actors.values())
-  { actors: actors_array, messages, events, autonumber, has_extended_syntax }
+  { actors: actors_array, messages, events, autonumber, has_extended_syntax, }
 }
 
 ///|

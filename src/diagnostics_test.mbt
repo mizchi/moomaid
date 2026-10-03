@@ -1,6 +1,6 @@
 ///|
 test "parse_checked reports an empty document at the first character" {
-  match parse_checked("") {
+  match @moomaid.parse_checked("") {
     Err(error) => {
       inspect(error.line, content="1")
       inspect(error.column, content="1")
@@ -12,7 +12,7 @@ test "parse_checked reports an empty document at the first character" {
 
 ///|
 test "parse_checked reports an unsupported diagram header" {
-  match parse_checked("sankey\n  A,B,10") {
+  match @moomaid.parse_checked("sankey\n  A,B,10") {
     Err(error) => {
       inspect(error.line, content="1")
       inspect(error.column, content="1")
@@ -24,7 +24,7 @@ test "parse_checked reports an unsupported diagram header" {
 
 ///|
 test "parse_checked reports a missing flowchart edge target" {
-  match parse_checked("flowchart LR\n  API -->") {
+  match @moomaid.parse_checked("flowchart LR\n  API -->") {
     Err(error) => {
       inspect(error.line, content="2")
       inspect(error.column, content="10")
@@ -36,7 +36,7 @@ test "parse_checked reports a missing flowchart edge target" {
 
 ///|
 test "parse_checked reports an unterminated subgraph" {
-  match parse_checked("flowchart LR\n  subgraph API\n    App[App]") {
+  match @moomaid.parse_checked("flowchart LR\n  subgraph API\n    App[App]") {
     Err(error) => {
       inspect(error.line, content="2")
       inspect(error.column, content="3")
@@ -48,7 +48,7 @@ test "parse_checked reports an unterminated subgraph" {
 
 ///|
 test "parse_checked reports an unexpected subgraph end" {
-  match parse_checked("flowchart LR\n  end") {
+  match @moomaid.parse_checked("flowchart LR\n  end") {
     Err(error) => {
       inspect(error.line, content="2")
       inspect(error.column, content="3")
@@ -63,11 +63,19 @@ test "parse_checked reports an unexpected subgraph end" {
 
 ///|
 test "render_checked returns ASCII and SVG artifacts on success" {
-  match render_checked("flowchart LR\n  A --> B", OutputFormat::Ascii) {
+  match
+    @moomaid.render_checked(
+      "flowchart LR\n  A --> B",
+      @moomaid.OutputFormat::Ascii,
+    ) {
     Ok(ascii) => inspect(ascii.contains("A"), content="true")
     Err(_) => inspect(false, content="true")
   }
-  match render_checked("flowchart LR\n  A --> B", OutputFormat::Svg) {
+  match
+    @moomaid.render_checked(
+      "flowchart LR\n  A --> B",
+      @moomaid.OutputFormat::Svg,
+    ) {
     Ok(svg) => inspect(svg.has_prefix("<svg"), content="true")
     Err(_) => inspect(false, content="true")
   }

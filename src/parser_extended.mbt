@@ -11,7 +11,7 @@ fn directive_value(text : String) -> String {
 /// Parses a flowchart subgraph declaration.
 fn parse_subgraph_header(text : String, depth : Int) -> GraphSubgraph {
   let node = parse_node_token(directive_value(text), NodeShape::Rect)
-  { id: node.id, label: node.label, node_ids: [], depth }
+  { id: node.id, label: node.label, node_ids: [], depth, }
 }
 
 ///|
@@ -91,7 +91,7 @@ fn parse_flowchart_with_subgraphs(
       None => ()
     }
   }
-  { kind: DiagramKind::Flowchart, direction, nodes, edges, subgraphs }
+  { kind: DiagramKind::Flowchart, direction, nodes, edges, subgraphs, }
 }
 
 ///|
@@ -116,7 +116,7 @@ fn parse_timeline(lines : Array[String], header_index : Int) -> TimelineDiagram 
         Some(item) => {
           let events = item.events
           events.push(trim_line(drop_first_char(text)))
-          items.push({ period: item.period, events })
+          items.push({ period: item.period, events, })
         }
         None => ()
       }
@@ -131,12 +131,12 @@ fn parse_timeline(lines : Array[String], header_index : Int) -> TimelineDiagram 
             events.push(trimmed)
           }
         }
-        items.push({ period: trim_line(period), events })
+        items.push({ period: trim_line(period), events, })
       }
       None => ()
     }
   }
-  { title, items }
+  { title, items, }
 }
 
 ///|
@@ -151,9 +151,9 @@ fn parse_mindmap(lines : Array[String], header_index : Int) -> OutlineDiagram {
       continue
     }
     let depth = (line.length() - text.length()) / 2
-    items.push({ depth, label: text })
+    items.push({ depth, label: text, })
   }
-  { kind: OutlineKind::Mindmap, title: None, items }
+  { kind: OutlineKind::Mindmap, title: None, items, }
 }
 
 ///|
@@ -171,12 +171,12 @@ fn parse_journey(lines : Array[String], header_index : Int) -> OutlineDiagram {
     if text.has_prefix("title ") {
       title = Some(directive_value(text))
     } else if text.has_prefix("section ") {
-      items.push({ depth: 0, label: directive_value(text) })
+      items.push({ depth: 0, label: directive_value(text), })
     } else {
-      items.push({ depth: 1, label: text })
+      items.push({ depth: 1, label: text, })
     }
   }
-  { kind: OutlineKind::Journey, title, items }
+  { kind: OutlineKind::Journey, title, items, }
 }
 
 ///|
@@ -201,10 +201,10 @@ fn parse_pie(
     }
     let text = trim_line(line)
     if text.length() > 0 && !text.has_prefix("%%") {
-      items.push({ depth: 0, label: text })
+      items.push({ depth: 0, label: text, })
     }
   }
-  { kind: OutlineKind::Pie, title, items }
+  { kind: OutlineKind::Pie, title, items, }
 }
 
 ///|
@@ -359,5 +359,5 @@ fn parse_gantt(lines : Array[String], header_index : Int) -> GanttDiagram {
       None => ()
     }
   }
-  { title, date_format, tasks }
+  { title, date_format, tasks, }
 }

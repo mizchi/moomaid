@@ -33,10 +33,19 @@ pub enum ActorKind {
   Participant
   Actor
 } derive(Eq, @debug.Debug)
+pub fn ActorKind::equal(Self, Self) -> Bool
+pub fn ActorKind::not_equal(Self, Self) -> Bool
+pub fn ActorKind::to_repr(Self) -> @debug.Repr
 
 type Canvas derive(Eq, @debug.Debug)
+pub fn Canvas::equal(Self, Self) -> Bool
+pub fn Canvas::not_equal(Self, Self) -> Bool
+pub fn Canvas::to_repr(Self) -> @debug.Repr
 
 type Defaults derive(Eq, @debug.Debug)
+pub fn Defaults::equal(Self, Self) -> Bool
+pub fn Defaults::not_equal(Self, Self) -> Bool
+pub fn Defaults::to_repr(Self) -> @debug.Repr
 
 pub struct DiagramColors {
   bg : String
@@ -47,6 +56,9 @@ pub struct DiagramColors {
   surface : String
   border : String
 } derive(Eq, @debug.Debug)
+pub fn DiagramColors::equal(Self, Self) -> Bool
+pub fn DiagramColors::not_equal(Self, Self) -> Bool
+pub fn DiagramColors::to_repr(Self) -> @debug.Repr
 
 pub enum DiagramKind {
   Flowchart
@@ -54,6 +66,9 @@ pub enum DiagramKind {
   Class
   Er
 } derive(Eq, @debug.Debug)
+pub fn DiagramKind::equal(Self, Self) -> Bool
+pub fn DiagramKind::not_equal(Self, Self) -> Bool
+pub fn DiagramKind::to_repr(Self) -> @debug.Repr
 
 pub enum Direction {
   TD
@@ -61,12 +76,18 @@ pub enum Direction {
   BT
   RL
 } derive(Eq, @debug.Debug)
+pub fn Direction::equal(Self, Self) -> Bool
+pub fn Direction::not_equal(Self, Self) -> Bool
+pub fn Direction::to_repr(Self) -> @debug.Repr
 
 pub struct GanttDiagram {
   title : String?
   date_format : String?
   tasks : Array[GanttTask]
 } derive(Eq, @debug.Debug)
+pub fn GanttDiagram::equal(Self, Self) -> Bool
+pub fn GanttDiagram::not_equal(Self, Self) -> Bool
+pub fn GanttDiagram::to_repr(Self) -> @debug.Repr
 
 pub struct GanttTask {
   section : String?
@@ -75,10 +96,16 @@ pub struct GanttTask {
   duration : String
   status : String?
 } derive(Eq, @debug.Debug)
+pub fn GanttTask::equal(Self, Self) -> Bool
+pub fn GanttTask::not_equal(Self, Self) -> Bool
+pub fn GanttTask::to_repr(Self) -> @debug.Repr
 
 pub struct GitGraphDiagram {
   events : Array[GitGraphEvent]
 } derive(Eq, @debug.Debug)
+pub fn GitGraphDiagram::equal(Self, Self) -> Bool
+pub fn GitGraphDiagram::not_equal(Self, Self) -> Bool
+pub fn GitGraphDiagram::to_repr(Self) -> @debug.Repr
 
 pub enum GitGraphEvent {
   Commit(String, String)
@@ -86,6 +113,9 @@ pub enum GitGraphEvent {
   Checkout(String)
   Merge(String)
 } derive(Eq, @debug.Debug)
+pub fn GitGraphEvent::equal(Self, Self) -> Bool
+pub fn GitGraphEvent::not_equal(Self, Self) -> Bool
+pub fn GitGraphEvent::to_repr(Self) -> @debug.Repr
 
 pub struct GraphDiagram {
   kind : DiagramKind
@@ -94,12 +124,18 @@ pub struct GraphDiagram {
   edges : Array[GraphEdge]
   subgraphs : Array[GraphSubgraph]
 } derive(Eq, @debug.Debug)
+pub fn GraphDiagram::equal(Self, Self) -> Bool
+pub fn GraphDiagram::not_equal(Self, Self) -> Bool
+pub fn GraphDiagram::to_repr(Self) -> @debug.Repr
 
 pub struct GraphEdge {
   from : String
   to : String
   label : String?
 } derive(Eq, @debug.Debug)
+pub fn GraphEdge::equal(Self, Self) -> Bool
+pub fn GraphEdge::not_equal(Self, Self) -> Bool
+pub fn GraphEdge::to_repr(Self) -> @debug.Repr
 
 pub struct GraphNode {
   id : String
@@ -107,6 +143,9 @@ pub struct GraphNode {
   shape : NodeShape
   sections : Array[Array[String]]
 } derive(Eq, @debug.Debug)
+pub fn GraphNode::equal(Self, Self) -> Bool
+pub fn GraphNode::not_equal(Self, Self) -> Bool
+pub fn GraphNode::to_repr(Self) -> @debug.Repr
 
 pub struct GraphSubgraph {
   id : String
@@ -114,8 +153,14 @@ pub struct GraphSubgraph {
   node_ids : Array[String]
   depth : Int
 } derive(Eq, @debug.Debug)
+pub fn GraphSubgraph::equal(Self, Self) -> Bool
+pub fn GraphSubgraph::not_equal(Self, Self) -> Bool
+pub fn GraphSubgraph::to_repr(Self) -> @debug.Repr
 
 type LayoutBox derive(Eq, @debug.Debug)
+pub fn LayoutBox::equal(Self, Self) -> Bool
+pub fn LayoutBox::not_equal(Self, Self) -> Bool
+pub fn LayoutBox::to_repr(Self) -> @debug.Repr
 
 pub enum MermaidDiagram {
   Graph(GraphDiagram)
@@ -125,6 +170,9 @@ pub enum MermaidDiagram {
   Gantt(GanttDiagram)
   Outline(OutlineDiagram)
 } derive(Eq, @debug.Debug)
+pub fn MermaidDiagram::equal(Self, Self) -> Bool
+pub fn MermaidDiagram::not_equal(Self, Self) -> Bool
+pub fn MermaidDiagram::to_repr(Self) -> @debug.Repr
 
 pub enum NodeShape {
   Rect
@@ -134,6 +182,9 @@ pub enum NodeShape {
   StateStart
   StateEnd
 } derive(Eq, @debug.Debug)
+pub fn NodeShape::equal(Self, Self) -> Bool
+pub fn NodeShape::not_equal(Self, Self) -> Bool
+pub fn NodeShape::to_repr(Self) -> @debug.Repr
 
 pub(all) struct Options {
   use_ascii : Bool
@@ -142,29 +193,44 @@ pub(all) struct Options {
   box_border_padding : Int
   max_width : Int
 } derive(Eq, @debug.Debug)
+pub fn Options::equal(Self, Self) -> Bool
+pub fn Options::not_equal(Self, Self) -> Bool
+pub fn Options::to_repr(Self) -> @debug.Repr
 
 pub struct OutlineDiagram {
   kind : OutlineKind
   title : String?
   items : Array[OutlineItem]
 } derive(Eq, @debug.Debug)
+pub fn OutlineDiagram::equal(Self, Self) -> Bool
+pub fn OutlineDiagram::not_equal(Self, Self) -> Bool
+pub fn OutlineDiagram::to_repr(Self) -> @debug.Repr
 
 pub struct OutlineItem {
   depth : Int
   label : String
 } derive(Eq, @debug.Debug)
+pub fn OutlineItem::equal(Self, Self) -> Bool
+pub fn OutlineItem::not_equal(Self, Self) -> Bool
+pub fn OutlineItem::to_repr(Self) -> @debug.Repr
 
 pub enum OutlineKind {
   Mindmap
   Journey
   Pie
 } derive(Eq, @debug.Debug)
+pub fn OutlineKind::equal(Self, Self) -> Bool
+pub fn OutlineKind::not_equal(Self, Self) -> Bool
+pub fn OutlineKind::to_repr(Self) -> @debug.Repr
 
 pub(all) enum OutputFormat {
   Ascii
   Svg
 } derive(Eq, @debug.Debug)
+pub fn OutputFormat::equal(Self, Self) -> Bool
+pub fn OutputFormat::not_equal(Self, Self) -> Bool
 pub fn OutputFormat::parse(StringView) -> Self?
+pub fn OutputFormat::to_repr(Self) -> @debug.Repr
 
 pub struct ParseDiagnostic {
   line : Int
@@ -172,26 +238,53 @@ pub struct ParseDiagnostic {
   message : String
 } derive(Eq, @debug.Debug)
 pub fn ParseDiagnostic::display(Self) -> String
+pub fn ParseDiagnostic::equal(Self, Self) -> Bool
+pub fn ParseDiagnostic::not_equal(Self, Self) -> Bool
+pub fn ParseDiagnostic::to_repr(Self) -> @debug.Repr
 
 type Point derive(Eq, @debug.Debug)
+pub fn Point::equal(Self, Self) -> Bool
+pub fn Point::not_equal(Self, Self) -> Bool
+pub fn Point::to_repr(Self) -> @debug.Repr
 
 type PositionedActor derive(Eq, @debug.Debug)
+pub fn PositionedActor::equal(Self, Self) -> Bool
+pub fn PositionedActor::not_equal(Self, Self) -> Bool
+pub fn PositionedActor::to_repr(Self) -> @debug.Repr
 
 type PositionedEdge derive(Eq, @debug.Debug)
+pub fn PositionedEdge::equal(Self, Self) -> Bool
+pub fn PositionedEdge::not_equal(Self, Self) -> Bool
+pub fn PositionedEdge::to_repr(Self) -> @debug.Repr
 
 type PositionedGraph derive(Eq, @debug.Debug)
+pub fn PositionedGraph::equal(Self, Self) -> Bool
+pub fn PositionedGraph::not_equal(Self, Self) -> Bool
+pub fn PositionedGraph::to_repr(Self) -> @debug.Repr
 
 type PositionedMessage derive(Eq, @debug.Debug)
+pub fn PositionedMessage::equal(Self, Self) -> Bool
+pub fn PositionedMessage::not_equal(Self, Self) -> Bool
+pub fn PositionedMessage::to_repr(Self) -> @debug.Repr
 
 type PositionedNode derive(Eq, @debug.Debug)
+pub fn PositionedNode::equal(Self, Self) -> Bool
+pub fn PositionedNode::not_equal(Self, Self) -> Bool
+pub fn PositionedNode::to_repr(Self) -> @debug.Repr
 
 type PositionedSequence derive(Eq, @debug.Debug)
+pub fn PositionedSequence::equal(Self, Self) -> Bool
+pub fn PositionedSequence::not_equal(Self, Self) -> Bool
+pub fn PositionedSequence::to_repr(Self) -> @debug.Repr
 
 pub struct SequenceActor {
   id : String
   label : String
   kind : ActorKind
 } derive(Eq, @debug.Debug)
+pub fn SequenceActor::equal(Self, Self) -> Bool
+pub fn SequenceActor::not_equal(Self, Self) -> Bool
+pub fn SequenceActor::to_repr(Self) -> @debug.Repr
 
 pub struct SequenceDiagram {
   actors : Array[SequenceActor]
@@ -200,6 +293,9 @@ pub struct SequenceDiagram {
   autonumber : Bool
   has_extended_syntax : Bool
 } derive(Eq, @debug.Debug)
+pub fn SequenceDiagram::equal(Self, Self) -> Bool
+pub fn SequenceDiagram::not_equal(Self, Self) -> Bool
+pub fn SequenceDiagram::to_repr(Self) -> @debug.Repr
 
 pub enum SequenceEvent {
   Message(SequenceMessage)
@@ -211,6 +307,9 @@ pub enum SequenceEvent {
   BlockAnd(String)
   BlockEnd
 } derive(Eq, @debug.Debug)
+pub fn SequenceEvent::equal(Self, Self) -> Bool
+pub fn SequenceEvent::not_equal(Self, Self) -> Bool
+pub fn SequenceEvent::to_repr(Self) -> @debug.Repr
 
 pub struct SequenceMessage {
   from : String
@@ -218,6 +317,9 @@ pub struct SequenceMessage {
   text : String
   dashed : Bool
 } derive(Eq, @debug.Debug)
+pub fn SequenceMessage::equal(Self, Self) -> Bool
+pub fn SequenceMessage::not_equal(Self, Self) -> Bool
+pub fn SequenceMessage::to_repr(Self) -> @debug.Repr
 
 pub struct SvgOptions {
   bg : String?
@@ -234,6 +336,9 @@ pub struct SvgOptions {
   description : String?
   debug_layout : Bool?
 } derive(Eq, @debug.Debug)
+pub fn SvgOptions::equal(Self, Self) -> Bool
+pub fn SvgOptions::not_equal(Self, Self) -> Bool
+pub fn SvgOptions::to_repr(Self) -> @debug.Repr
 pub fn SvgOptions::with_background(Self, String) -> Self
 pub fn SvgOptions::with_debug_layout(Self) -> Self
 pub fn SvgOptions::with_description(Self, String) -> Self
@@ -246,13 +351,18 @@ pub struct TimelineDiagram {
   title : String?
   items : Array[TimelineItem]
 } derive(Eq, @debug.Debug)
+pub fn TimelineDiagram::equal(Self, Self) -> Bool
+pub fn TimelineDiagram::not_equal(Self, Self) -> Bool
+pub fn TimelineDiagram::to_repr(Self) -> @debug.Repr
 
 pub struct TimelineItem {
   period : String
   events : Array[String]
 } derive(Eq, @debug.Debug)
+pub fn TimelineItem::equal(Self, Self) -> Bool
+pub fn TimelineItem::not_equal(Self, Self) -> Bool
+pub fn TimelineItem::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 
 // Traits
-

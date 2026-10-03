@@ -1,7 +1,7 @@
 ///|
 test "renders a mindmap as an indented outline" {
   let source = "mindmap\n  root((Architecture))\n    API\n      Auth"
-  match render_checked(source, OutputFormat::Ascii) {
+  match @moomaid.render_checked(source, @moomaid.OutputFormat::Ascii) {
     Ok(ascii) => {
       inspect(ascii.contains("Mindmap"), content="true")
       inspect(ascii.contains("Architecture"), content="true")
@@ -14,7 +14,7 @@ test "renders a mindmap as an indented outline" {
 ///|
 test "renders journey sections and tasks" {
   let source = "journey\n  title Checkout\n  section Customer\n    Submit order: 5: Customer\n  section System\n    Reserve stock: 3: API"
-  match render_checked(source, OutputFormat::Ascii) {
+  match @moomaid.render_checked(source, @moomaid.OutputFormat::Ascii) {
     Ok(ascii) => {
       inspect(ascii.contains("Journey: Checkout"), content="true")
       inspect(ascii.contains("Customer"), content="true")
@@ -27,7 +27,7 @@ test "renders journey sections and tasks" {
 ///|
 test "renders pie entries to SVG" {
   let source = "pie title Language share\n  \"MoonBit\" : 40\n  \"Other\" : 60"
-  match render_checked(source, OutputFormat::Svg) {
+  match @moomaid.render_checked(source, @moomaid.OutputFormat::Svg) {
     Ok(svg) => {
       inspect(svg.contains("Pie: Language share"), content="true")
       inspect(svg.contains("MoonBit"), content="true")

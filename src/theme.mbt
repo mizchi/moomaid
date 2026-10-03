@@ -42,7 +42,7 @@ struct Defaults {
 } derive(Debug, Eq)
 
 ///|
-let defaults : Defaults = { bg: "#FFFFFF", fg: "#27272A" }
+let defaults : Defaults = { bg: "#FFFFFF", fg: "#27272A", }
 
 ///|
 fn default_render_options() -> SvgOptions {
@@ -91,7 +91,7 @@ fn build_colors(options : SvgOptions) -> DiagramColors {
   let muted = opt_or(options.muted, fg)
   let surface = opt_or(options.surface, bg)
   let border = opt_or(options.border, fg)
-  { bg, fg, line, accent, muted, surface, border }
+  { bg, fg, line, accent, muted, surface, border, }
 }
 
 ///|
@@ -139,3 +139,27 @@ fn make_themes() -> Map[String, DiagramColors] {
 
 ///|
 pub let themes : Map[String, DiagramColors] = make_themes()
+
+///|
+pub extend DiagramColors with @debug.Debug::{to_repr}
+
+///|
+pub extend DiagramColors with Eq::{not_equal, equal}
+
+///|
+pub extend SvgOptions with @debug.Debug::{to_repr}
+
+///|
+pub extend SvgOptions with Eq::{not_equal, equal}
+
+///|
+pub extend Options with @debug.Debug::{to_repr}
+
+///|
+pub extend Options with Eq::{not_equal, equal}
+
+///|
+pub extend Defaults with @debug.Debug::{to_repr}
+
+///|
+pub extend Defaults with Eq::{not_equal, equal}

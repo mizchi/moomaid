@@ -424,7 +424,7 @@ fn layout_graph(diagram : GraphDiagram, options : Options) -> PositionedGraph {
       width: 1,
       height: 1,
     })
-    nodes.push({ node: n, box })
+    nodes.push({ node: n, box, })
   }
   let edges : Array[PositionedEdge] = []
   for edge in diagram.edges {
@@ -450,7 +450,7 @@ fn layout_graph(diagram : GraphDiagram, options : Options) -> PositionedGraph {
       Direction::TD =>
         (fb.x + fb.width / 2, fb.y + fb.height, tb.x + tb.width / 2, tb.y)
     }
-    edges.push({ edge, start: { x: sx, y: sy }, end: { x: ex, y: ey } })
+    edges.push({ edge, start: { x: sx, y: sy, }, end: { x: ex, y: ey, }, })
   }
   {
     nodes,
@@ -595,7 +595,7 @@ fn layout_sequence(
         width: al.width.to_int(),
         height: actor_height,
       }
-      let pa : PositionedActor = { actor, box }
+      let pa : PositionedActor = { actor, box, }
       actors.push(pa)
       actor_map.set(actor.id, pa)
     }
@@ -605,9 +605,9 @@ fn layout_sequence(
   for msg in diagram.messages {
     match (actor_map.get(msg.from), actor_map.get(msg.to)) {
       (Some(f), Some(t)) => {
-        let start = { x: f.box.x + f.box.width / 2, y }
-        let end_ = { x: t.box.x + t.box.width / 2, y }
-        messages.push({ message: msg, start, end: end_, y })
+        let start = { x: f.box.x + f.box.width / 2, y, }
+        let end_ = { x: t.box.x + t.box.width / 2, y, }
+        messages.push({ message: msg, start, end: end_, y, })
         y += 2
       }
       _ => ()
@@ -620,5 +620,5 @@ fn layout_sequence(
     last.x + last.width + 2
   }
   let height = y
-  { actors, messages, width, height }
+  { actors, messages, width, height, }
 }

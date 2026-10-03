@@ -1,6 +1,7 @@
 supported_targets = "js+wasm"
 
 import {
+  "moonbitlang/core/debug",
   "mizchi/syntree/highlight",
   "mizchi/crater-layout" @crater,
   "mizchi/crater-core" @layout_types,

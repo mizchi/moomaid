@@ -17,4 +17,3 @@ pub fn render_svg_to_kitty_commands(String, Int, Int, Int, font_callback? : (Int
 // Type aliases
 
 // Traits
-

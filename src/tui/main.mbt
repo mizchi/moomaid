@@ -115,7 +115,7 @@ fn build_diagrams(width : Int) -> Array[DiagramEntry] {
       None => []
     }
     image_id = image_id + 1
-    entries.push({ label: item.0, lines, svg_commands })
+    entries.push({ label: item.0, lines, svg_commands, })
   }
   entries
 }
@@ -135,7 +135,7 @@ async fn main {
     let is_svg = svg_mode.get()
     let diagram = diagrams[tab_idx]
     let lines = diagram.lines
-    let sb = StringBuilder::new()
+    let sb = StringBuilder()
     sb.write_string(esc + "H")
 
     // Tab bar
