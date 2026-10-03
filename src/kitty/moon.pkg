@@ -1,5 +1,4 @@
 import {
   "mizchi/svg",
   "mizchi/tui/image",
-  "moonbitlang/core/buffer",
 }

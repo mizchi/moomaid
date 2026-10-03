@@ -58,7 +58,7 @@ fn fmt_num(s : String, max_len : Int) -> String {
   if s.length() <= max_len {
     return s
   }
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   let mut i = 0
   for c in s {
     if i >= max_len {

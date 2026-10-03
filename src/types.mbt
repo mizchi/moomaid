@@ -234,3 +234,189 @@ struct PositionedSequence {
   width : Int
   height : Int
 } derive(Debug, Eq)
+
+///|
+pub extend DiagramKind with @debug.Debug::{to_repr}
+
+///|
+pub extend DiagramKind with Eq::{not_equal, equal}
+
+///|
+pub extend ParseDiagnostic with @debug.Debug::{to_repr}
+
+///|
+pub extend ParseDiagnostic with Eq::{not_equal, equal}
+
+///|
+pub extend Direction with @debug.Debug::{to_repr}
+
+///|
+pub extend Direction with Eq::{not_equal, equal}
+
+///|
+pub extend NodeShape with @debug.Debug::{to_repr}
+
+///|
+pub extend NodeShape with Eq::{not_equal, equal}
+
+///|
+pub extend GraphNode with @debug.Debug::{to_repr}
+
+///|
+pub extend GraphNode with Eq::{not_equal, equal}
+
+///|
+pub extend GraphEdge with @debug.Debug::{to_repr}
+
+///|
+pub extend GraphEdge with Eq::{not_equal, equal}
+
+///|
+pub extend GraphSubgraph with @debug.Debug::{to_repr}
+
+///|
+pub extend GraphSubgraph with Eq::{not_equal, equal}
+
+///|
+pub extend GraphDiagram with @debug.Debug::{to_repr}
+
+///|
+pub extend GraphDiagram with Eq::{not_equal, equal}
+
+///|
+pub extend ActorKind with @debug.Debug::{to_repr}
+
+///|
+pub extend ActorKind with Eq::{not_equal, equal}
+
+///|
+pub extend SequenceActor with @debug.Debug::{to_repr}
+
+///|
+pub extend SequenceActor with Eq::{not_equal, equal}
+
+///|
+pub extend SequenceMessage with @debug.Debug::{to_repr}
+
+///|
+pub extend SequenceMessage with Eq::{not_equal, equal}
+
+///|
+pub extend SequenceEvent with @debug.Debug::{to_repr}
+
+///|
+pub extend SequenceEvent with Eq::{not_equal, equal}
+
+///|
+pub extend SequenceDiagram with @debug.Debug::{to_repr}
+
+///|
+pub extend SequenceDiagram with Eq::{not_equal, equal}
+
+///|
+pub extend TimelineItem with @debug.Debug::{to_repr}
+
+///|
+pub extend TimelineItem with Eq::{not_equal, equal}
+
+///|
+pub extend TimelineDiagram with @debug.Debug::{to_repr}
+
+///|
+pub extend TimelineDiagram with Eq::{not_equal, equal}
+
+///|
+pub extend OutlineKind with @debug.Debug::{to_repr}
+
+///|
+pub extend OutlineKind with Eq::{not_equal, equal}
+
+///|
+pub extend OutlineItem with @debug.Debug::{to_repr}
+
+///|
+pub extend OutlineItem with Eq::{not_equal, equal}
+
+///|
+pub extend OutlineDiagram with @debug.Debug::{to_repr}
+
+///|
+pub extend OutlineDiagram with Eq::{not_equal, equal}
+
+///|
+pub extend GitGraphEvent with @debug.Debug::{to_repr}
+
+///|
+pub extend GitGraphEvent with Eq::{not_equal, equal}
+
+///|
+pub extend GitGraphDiagram with @debug.Debug::{to_repr}
+
+///|
+pub extend GitGraphDiagram with Eq::{not_equal, equal}
+
+///|
+pub extend GanttTask with @debug.Debug::{to_repr}
+
+///|
+pub extend GanttTask with Eq::{not_equal, equal}
+
+///|
+pub extend GanttDiagram with @debug.Debug::{to_repr}
+
+///|
+pub extend GanttDiagram with Eq::{not_equal, equal}
+
+///|
+pub extend MermaidDiagram with @debug.Debug::{to_repr}
+
+///|
+pub extend MermaidDiagram with Eq::{not_equal, equal}
+
+///|
+pub extend Point with @debug.Debug::{to_repr}
+
+///|
+pub extend Point with Eq::{not_equal, equal}
+
+///|
+pub extend LayoutBox with @debug.Debug::{to_repr}
+
+///|
+pub extend LayoutBox with Eq::{not_equal, equal}
+
+///|
+pub extend PositionedNode with @debug.Debug::{to_repr}
+
+///|
+pub extend PositionedNode with Eq::{not_equal, equal}
+
+///|
+pub extend PositionedEdge with @debug.Debug::{to_repr}
+
+///|
+pub extend PositionedEdge with Eq::{not_equal, equal}
+
+///|
+pub extend PositionedGraph with @debug.Debug::{to_repr}
+
+///|
+pub extend PositionedGraph with Eq::{not_equal, equal}
+
+///|
+pub extend PositionedActor with @debug.Debug::{to_repr}
+
+///|
+pub extend PositionedActor with Eq::{not_equal, equal}
+
+///|
+pub extend PositionedMessage with @debug.Debug::{to_repr}
+
+///|
+pub extend PositionedMessage with Eq::{not_equal, equal}
+
+///|
+pub extend PositionedSequence with @debug.Debug::{to_repr}
+
+///|
+pub extend PositionedSequence with Eq::{not_equal, equal}

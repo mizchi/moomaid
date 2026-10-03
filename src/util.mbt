@@ -15,13 +15,13 @@ fn trim_line(line : String) -> String {
 ///|
 fn split_ws(line : String) -> Array[String] {
   let out : Array[String] = []
-  let mut sb = StringBuilder::new()
+  let mut sb = StringBuilder()
   let mut has = false
   for c in line {
     if c is (' ' | '\t' | '\n' | '\r') {
       if has {
         out.push(sb.to_string())
-        sb = StringBuilder::new()
+        sb = StringBuilder()
         has = false
       }
     } else {
@@ -39,7 +39,7 @@ fn split_ws(line : String) -> Array[String] {
 fn split_once(text : String, sep : String) -> (String, String)? {
   let mut first = true
   let mut left : String = ""
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   let mut found = false
   for part in text.split(sep) {
     if first {
@@ -67,7 +67,7 @@ fn drop_first_char(text : String) -> String {
   }
   let iter = text.iter()
   let _ = iter.next()
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   for c in iter {
     sb.write_char(c)
   }
@@ -78,7 +78,7 @@ fn drop_first_char(text : String) -> String {
 fn strip_quotes(text : String) -> String {
   let t = text.trim().to_owned()
   if t.has_prefix("\"") && t.has_suffix("\"") && t.length() >= 2 {
-    let sb = StringBuilder::new()
+    let sb = StringBuilder()
     let len = t.length()
     let mut i = 0
     for c in t {

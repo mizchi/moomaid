@@ -10,10 +10,10 @@ test "SVG visual regression for subgraphs and CJK edge labels" {
     #|  end
     #|  Browser -->|注文を送信| API
     #|
-  let options = default_svg_options()
+  let options = @moomaid.default_svg_options()
     .with_padding(24)
     .with_title("Order submission")
-  match render_svg_checked(source, options~) {
+  match @moomaid.render_svg_checked(source, options~) {
     Ok(svg) =>
       inspect(
         svg,

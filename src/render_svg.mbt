@@ -1,6 +1,6 @@
 ///|
 fn escape_xml(text : String) -> String {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   for c in text {
     match c {
       '&' => sb.write_view("&amp;")
@@ -284,7 +284,7 @@ fn svg_open(
   title : String?,
   description : String?,
 ) -> String {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   sb.write_view(
     "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"\{width_px}\" height=\"\{height_px}\" viewBox=\"0 0 \{width_px} \{height_px}\" role=\"img\"",
   )
@@ -438,9 +438,9 @@ fn debug_segment_hits_box(
   if debug_point_in_box(start, box) || debug_point_in_box(end_, box) {
     return true
   }
-  let top_left : DebugPoint = { px: box.x, py: box.y }
-  let top_right : DebugPoint = { px: box.x + box.width, py: box.y }
-  let bottom_left : DebugPoint = { px: box.x, py: box.y + box.height }
+  let top_left : DebugPoint = { px: box.x, py: box.y, }
+  let top_right : DebugPoint = { px: box.x + box.width, py: box.y, }
+  let bottom_left : DebugPoint = { px: box.x, py: box.y + box.height, }
   let bottom_right : DebugPoint = {
     px: box.x + box.width,
     py: box.y + box.height,
@@ -485,29 +485,29 @@ fn debug_edge_curve(
   if edge.edge.from == edge.edge.to {
     let outer_x = if x1 > x2 { x1 } else { x2 }
     (
-      { px: outer_x, py: y1 },
-      { px: outer_x + 42.0, py: y1 - 36.0 },
-      { px: outer_x + 42.0, py: y1 + 36.0 },
-      { px: outer_x + 14.0, py: y1 },
+      { px: outer_x, py: y1, },
+      { px: outer_x + 42.0, py: y1 - 36.0, },
+      { px: outer_x + 42.0, py: y1 + 36.0, },
+      { px: outer_x + 14.0, py: y1, },
     )
   } else {
     match direction {
       Direction::TD | Direction::BT => {
         let mid_y = (y1 + y2) / 2.0
         (
-          { px: x1, py: y1 },
-          { px: x1 + lane_offset, py: mid_y },
-          { px: x2 + lane_offset, py: mid_y },
-          { px: x2, py: y2 },
+          { px: x1, py: y1, },
+          { px: x1 + lane_offset, py: mid_y, },
+          { px: x2 + lane_offset, py: mid_y, },
+          { px: x2, py: y2, },
         )
       }
       Direction::LR | Direction::RL => {
         let mid_x = (x1 + x2) / 2.0
         (
-          { px: x1, py: y1 },
-          { px: mid_x, py: y1 + lane_offset },
-          { px: mid_x, py: y2 + lane_offset },
-          { px: x2, py: y2 },
+          { px: x1, py: y1, },
+          { px: mid_x, py: y1 + lane_offset, },
+          { px: mid_x, py: y2 + lane_offset, },
+          { px: x2, py: y2, },
         )
       }
     }
@@ -724,7 +724,7 @@ fn render_debug_layout_svg(
 ) -> String {
   let boxes = debug_layout_boxes(diagram, layout, font_size)
   let collisions = debug_layout_collisions(layout, boxes)
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   sb.write_view("<g class=\"debug-layout\" pointer-events=\"none\">\n")
   for index, edge in layout.edges {
     let lane_offset = edge_lane_offset(layout.edges, index)
@@ -773,7 +773,7 @@ fn svg_state_circle(
   accent : String,
   filled : Bool,
 ) -> String {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   if filled {
     sb.write_view(
       "<circle cx=\"\{cx}\" cy=\"\{cy}\" r=\"\{r}\" fill=\"\{accent}\" />\n",
@@ -814,7 +814,7 @@ fn render_graph_svg(diagram : GraphDiagram, options : SvgOptions) -> String {
   let width_px = content_width + pad * 2
   let height_px = content_height + pad * 2
   let font_size = cell_py * 0.8
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   sb.write_view(
     svg_open(
       width_px,
@@ -985,7 +985,7 @@ fn render_sequence_svg(
   let width_px = to_px_x(layout.width) + pad * 2
   let height_px = to_px_y(layout.height) + pad * 2
   let font_size = cell_py * 0.8
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   sb.write_view(
     svg_open(
       width_px,

@@ -89,3 +89,9 @@ pub fn render(text : String, format : OutputFormat) -> String {
     Svg => experimental_render_to_svg(text)
   }
 }
+
+///|
+pub extend OutputFormat with @debug.Debug::{to_repr}
+
+///|
+pub extend OutputFormat with Eq::{not_equal, equal}

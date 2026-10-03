@@ -16,7 +16,7 @@ fn split_payload(payload : String, chunk_size? : Int = 4096) -> Array[String] {
   let mut i = 0
   while i < len {
     let end = if i + chunk_size > len { len } else { i + chunk_size }
-    let sb = StringBuilder::new(size_hint=end - i)
+    let sb = StringBuilder(size_hint=end - i)
     for j in i..<end {
       sb.write_char(payload[j].to_int().unsafe_to_char())
     }
@@ -77,7 +77,7 @@ pub fn kitty_delete_all_visible() -> String {
 ///|
 /// Convert SVG PathCommands to SVG path data string
 fn commands_to_path_d(cmds : Array[@svg.PathCommand]) -> String {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   for cmd in cmds {
     if sb.to_string().length() > 0 {
       sb.write_char(' ')
@@ -177,7 +177,7 @@ fn extract_attr(tag : String, attr_name : String) -> String {
       while end < tag.length() && tag[end].to_int().unsafe_to_char() != '"' {
         end = end + 1
       }
-      let sb = StringBuilder::new()
+      let sb = StringBuilder()
       for k in start..<end {
         sb.write_char(tag[k].to_int().unsafe_to_char())
       }
@@ -194,7 +194,7 @@ fn replace_text_with_paths(
   svg_str : String,
   font_cb : (Int, Double) -> (Array[@svg.PathCommand], Double),
 ) -> String {
-  let result = StringBuilder::new()
+  let result = StringBuilder()
   let len = svg_str.length()
   let mut i = 0
   while i < len {
@@ -223,7 +223,7 @@ fn replace_text_with_paths(
       }
       j = j + 1 // skip '>'
       // Extract tag attributes
-      let tag_sb = StringBuilder::new()
+      let tag_sb = StringBuilder()
       for k in tag_start..<j {
         tag_sb.write_char(svg_str[k].to_int().unsafe_to_char())
       }
@@ -242,7 +242,7 @@ fn replace_text_with_paths(
         }
         content_end = content_end + 1
       }
-      let text_sb = StringBuilder::new()
+      let text_sb = StringBuilder()
       for k in content_start..<content_end {
         text_sb.write_char(svg_str[k].to_int().unsafe_to_char())
       }
@@ -269,7 +269,7 @@ fn replace_text_with_paths(
         ""
       }
       // Render text as path using font callback
-      let path_d = StringBuilder::new()
+      let path_d = StringBuilder()
       let mut cursor_x = x
       for k in 0..<text_content.length() {
         let codepoint = text_content[k].to_int()

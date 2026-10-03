@@ -7,7 +7,7 @@ struct Canvas {
 
 ///|
 fn Canvas::new(width : Int, height : Int) -> Canvas {
-  { width, height, cells: FixedArray::make(width * height, " ") }
+  { width, height, cells: FixedArray::make(width * height, " "), }
 }
 
 ///|
@@ -446,7 +446,7 @@ fn Canvas::render(self : Canvas) -> String {
     }
     last_row -= 1
   }
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   for y in 0..<=last_row {
     if y > 0 {
       sb.write_char('\n')
@@ -624,3 +624,9 @@ fn render_sequence_ascii(
     render_sequence_canvas(diagram, options).render()
   }
 }
+
+///|
+pub extend Canvas with @debug.Debug::{to_repr}
+
+///|
+pub extend Canvas with Eq::{not_equal, equal}

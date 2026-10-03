@@ -9,7 +9,7 @@ test {
     #|graph TD
     #|  A --> B
     #|
-  let ascii = render_to_string(text)
+  let ascii = @moomaid.render_to_string(text)
   assert_true(ascii.contains("A"))
   assert_true(ascii.contains("B"))
 }
@@ -20,7 +20,7 @@ test {
 ```mbt check
 ///|
 test {
-  let opts = svg_options_from_theme("github-dark")
+  let opts = @moomaid.svg_options_from_theme("github-dark")
   assert_true(opts is Some(_))
 }
 ```

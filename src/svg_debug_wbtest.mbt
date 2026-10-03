@@ -25,10 +25,10 @@ test "debug layout highlights an edge crossing a subgraph heading" {
 
 ///|
 test "debug geometry detects crossing line segments at different positions" {
-  let first_start : DebugPoint = { px: 0.0, py: 0.0 }
-  let first_end : DebugPoint = { px: 100.0, py: 100.0 }
-  let second_start : DebugPoint = { px: 0.0, py: 100.0 }
-  let second_end : DebugPoint = { px: 100.0, py: 0.0 }
+  let first_start : DebugPoint = { px: 0.0, py: 0.0, }
+  let first_end : DebugPoint = { px: 100.0, py: 100.0, }
+  let second_start : DebugPoint = { px: 0.0, py: 100.0, }
+  let second_end : DebugPoint = { px: 100.0, py: 0.0, }
   assert_true(
     debug_segments_intersect(first_start, first_end, second_start, second_end),
   )

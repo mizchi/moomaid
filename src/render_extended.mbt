@@ -1,7 +1,7 @@
 ///|
 /// Renders sequence extensions in a compact terminal-friendly event stream.
 fn render_extended_sequence_ascii(diagram : SequenceDiagram) -> String {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   sb.write_view("sequenceDiagram")
   let actor_labels : Map[String, String] = Map([])
   for actor in diagram.actors {
@@ -44,7 +44,7 @@ fn render_extended_sequence_ascii(diagram : SequenceDiagram) -> String {
 ///|
 /// Renders a Mermaid timeline as an ordered text outline.
 fn render_timeline_ascii(diagram : TimelineDiagram) -> String {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   match diagram.title {
     Some(title) => sb.write_view("Timeline: \{title}")
     None => sb.write_view("Timeline")
@@ -65,7 +65,7 @@ fn render_outline_ascii(diagram : OutlineDiagram) -> String {
     OutlineKind::Journey => "Journey"
     OutlineKind::Pie => "Pie"
   }
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   match diagram.title {
     Some(title) => sb.write_view("\{kind}: \{title}")
     None => sb.write_view(kind)
@@ -88,7 +88,7 @@ fn render_outline_svg(diagram : OutlineDiagram, options : SvgOptions) -> String 
 ///|
 /// Renders gitGraph events while retaining their branch context.
 fn render_git_graph_ascii(diagram : GitGraphDiagram) -> String {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   sb.write_view("gitGraph")
   for event in diagram.events {
     sb.write_char('\n')
@@ -107,7 +107,7 @@ fn render_git_graph_ascii(diagram : GitGraphDiagram) -> String {
 ///|
 /// Renders Gantt tasks as a stable terminal table.
 fn render_gantt_ascii(diagram : GanttDiagram) -> String {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   match diagram.title {
     Some(title) => sb.write_view("Gantt: \{title}")
     None => sb.write_view("Gantt")
@@ -144,7 +144,7 @@ fn render_text_svg(text : String, options : SvgOptions) -> String {
   let pad = resolve_svg_padding(options).to_double()
   let width_px = columns.to_double() * cell_px + pad * 2.0
   let height_px = lines.length().to_double() * cell_py + pad * 2.0
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   sb.write_view(
     svg_open(
       width_px,
